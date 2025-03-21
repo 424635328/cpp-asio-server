@@ -5,15 +5,24 @@
 #include <unordered_map>
 #include <istream>
 
+using namespace std;
+
+// HttpRequest类，用于表示HTTP请求
 class HttpRequest {
 public:
-    std::string method;
-    std::string uri;
-    std::string version;
-    std::unordered_map<std::string, std::string> headers;
-    std::string body;
+    // HTTP请求方法
+    string method;
+    // 统一资源标识符（URI）
+    string uri;
+    // HTTP版本号
+    string version;
+    // 头部信息
+    unordered_map<string, string> headers;
+    // 请求体
+    string body;
 
-    friend std::istream& operator>>(std::istream& is, HttpRequest& request);
+    // 输入流操作符重载
+    friend istream& operator>>(istream& is, HttpRequest& request);
 };
 
 #endif

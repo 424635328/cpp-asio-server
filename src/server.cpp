@@ -1,44 +1,54 @@
 #include "server.h"
 #include "asio_context.h"
-#include "http_session.h" // Include HttpSession.h
+#include "http_session.h"
 #include <iostream>
+
+using namespace std; 
 
 Server::Server(AsioContext& io_context, short port)
     : acceptor_(io_context.get_io_context(), boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
       io_context_(io_context) {
-    std::cout << "Server::Server - Creating server on port " << port << std::endl;
-    do_accept();
-    std::cout << "Server listening on port " << port << std::endl;
+    // 构造函数：创建服务器，绑定到指定端口
+    cout << "Server::Server - 创建服务器，端口: " << port << endl;
+    do_accept(); // 开始监听连接请求
+    cout << "服务器监听Port: " << port << endl;
 }
 
 Server::~Server() {
-    std::cout << "Server::~Server - Shutting down server." << std::endl;
-    std::cout << "Server::~Server - All threads joined." << std::endl;
+    // 析构函数：服务器关闭时执行
+    cout << "Server::~Server - Shut down the server." << endl;
+    cout << "Server::~Server - All threads have been joined." << endl;
 }
 
 void Server::do_accept() {
-    std::cout << "Server::do_accept - Starting accept loop." << std::endl;
+    // 异步接受新的连接
+    cout << "Server::do_accept - Start receiving loop." << endl;
     acceptor_.async_accept(
         [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
-            std::cout << "Server::do_accept - async_accept callback - Started" << std::endl;
+            // Lambda表达式：异步接受连接的回调函数
+            cout << "Server::do_accept - async_accept Callback - start" << endl;
             if (!ec) {
-                std::cout << "Server::do_accept - New connection accepted." << std::endl;
-                std::cout << "Server::do_accept - Socket local endpoint: " << socket.local_endpoint() << std::endl;
-                std::cout << "Server::do_accept - Socket remote endpoint: " << socket.remote_endpoint() << std::endl;
-                auto session = create_session(std::move(socket));
+                // 如果没有错误，则表示成功接受了新的连接
+                cout << "Server::do_accept - Received a new connection." << endl;
+                cout << "Server::do_accept - Socket 本地端点: " << socket.local_endpoint() << endl;
+                cout << "Server::do_accept - Socket 远程端点: " << socket.remote_endpoint() << endl;
+                auto session = create_session(std::move(socket)); // 创建一个新的会话
                 if (session) {
-                    std::cout << "Server::do_accept - Session created, starting session." << std::endl;
+                    // 如果会话创建成功，则启动会话
+                    cout << "Server::do_accept - Session created, start session." << endl;
                     session->start();
                 } else {
-                    std::cerr << "Server::do_accept - Failed to create session." << std::endl;
+                    // 如果会话创建失败，则输出错误信息
+                    cerr << "Server::do_accept - 创建会话失败." << endl;
                 }
             } else {
-                std::cerr << "Server::do_accept - Accept error: " << ec.message() << std::endl;
-                std::cerr << "Server::do_accept - Accept error category: " << ec.category().name() << std::endl;
-                std::cerr << "Server::do_accept - Accept error value: " << ec.value() << std::endl;
+                // 如果接受连接时发生错误，则输出错误信息
+                cerr << "Server::do_accept - 接受错误: " << ec.message() << endl;
+                cerr << "Server::do_accept - 接受错误类别: " << ec.category().name() << endl;
+                cerr << "Server::do_accept - 接受错误值: " << ec.value() << endl;
             }
-            std::cout << "Server::do_accept - async_accept callback - Finished" << std::endl;
-            do_accept(); // 再次调用 do_accept
+            cout << "Server::do_accept - async_accept 回调 - 结束" << endl;
+            do_accept(); // 再次调用 do_accept，继续监听新的连接
         });
-    std::cout << "Server::do_accept - async_accept called" << std::endl;
+    cout << "Server::do_accept - async_accept Called" << endl;
 }

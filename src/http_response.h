@@ -4,14 +4,22 @@
 #include <string>
 #include <unordered_map>
 
+using namespace std;
+
+// HttpResponse类，表示HTTP响应
 class HttpResponse {
 public:
+    // 状态码
     int status_code;
-    std::string version = "HTTP/1.1";
-    std::unordered_map<std::string, std::string> headers; // Remove const
-    std::string body;
+    // HTTP版本
+    string version = "HTTP/1.1";
+    // 头部信息
+    unordered_map<string, string> headers;
+    // 响应体
+    string body;
 
-    std::string to_string() const;
+    // 转换为字符串
+    string to_string() const;
 };
 
 #endif
