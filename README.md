@@ -67,8 +67,8 @@ brew install boost
 1.  克隆仓库：
 
     ```bash
-    git clone https://github.com/YOUR_USERNAME/my_server_framework.git
-    cd my_server_framework
+    git clone https://github.com/424635328/cpp-asio-server
+    cd cpp-asio-server
     ```
 
 2.  创建一个构建目录：
@@ -89,7 +89,7 @@ brew install boost
     *   **使用 Visual Studio (Windows)：**
 
         ```bash
-        cmake .. -A x64
+        cmake -B build -S . -A x64
         ```
 
     *   **使用 Make (Linux/macOS)：**
@@ -137,6 +137,8 @@ brew install boost
 ```c++
 MyHttpServer server(io_context, 8088); // 监听 8088 端口
 ```
+
+可以将打印信息全部改为英语减少执行cmake时的警告&报错
 
 ## 贡献
 
