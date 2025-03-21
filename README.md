@@ -67,8 +67,8 @@ brew install boost
 1.  克隆仓库：
 
     ```bash
-    git clone https://github.com/YOUR_USERNAME/my_server_framework.git
-    cd my_server_framework
+    git clone https://github.com/424635328/cpp-asio-server
+    cd cpp-asio-server
     ```
 
 2.  创建一个构建目录：
