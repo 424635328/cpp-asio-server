@@ -138,10 +138,6 @@ brew install boost
 MyHttpServer server(io_context, 8088); // 监听 8088 端口
 ```
 
-## 示例用法
-
-`examples` 目录（如果创建）可以包含更多关于如何使用框架的不同功能的详细示例。
-
 ## 贡献
 
 欢迎贡献！ 请遵循以下准则：
