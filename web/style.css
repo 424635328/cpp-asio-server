@@ -1,0 +1,84 @@
+/* style.css */
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+  }
+  
+  h1 {
+    color: #333;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  p {
+    color: #666;
+    line-height: 1.5;
+    padding: 10px;
+  }
+  
+  /* 导航栏样式 */
+  nav {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+  }
+  
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-around; /* 使导航项均匀分布 */
+  }
+  
+  nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px;
+    display: block; /* 使链接占据整个导航项区域 */
+  }
+  
+  nav a:hover {
+    background-color: #555;
+  }
+  
+  /* 图像样式 */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* 移除图像底部的额外空间 */
+    margin: 10px auto; /* 居中显示图像 */
+  }
+  
+  /* 链接样式 */
+  a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  /* 容器样式（可选，用于限制内容宽度） */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 页面底部样式 */
+  footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    position: fixed; /* 将页脚固定在底部 */
+    bottom: 0;
+    width: 100%;
+  }
