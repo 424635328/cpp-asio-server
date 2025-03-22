@@ -18,11 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
   if (wasmButton && dynamicContent) {
     wasmButton.addEventListener('click', function() {
       console.log("WASM 按钮被点击"); // 添加日志
-      loadWasmModule('./module.wasm')
+      loadWasmModule('/web/module.wasm')
         .then(instance => {
           console.log("WASM 模块加载和实例化成功"); // 添加日志
-          // Example: Calling a function named 'calculate' that takes two integers and returns an integer
-          const result = instance.exports.calculate(10, 20); // Replace with your WASM function and arguments
+          const result = instance.exports.calculate(10, 20); // 调用 WASM 函数
           console.log("WASM 函数调用结果:", result); // 添加日志
           dynamicContent.innerText = "WASM 结果: " + result;
         })
@@ -57,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
       console.error("加载 WASM 模块时发生错误:", error);
       dynamicContent.innerText = "错误：无法加载 WASM 模块。";
-      throw error; // Re-throw the error so that the caller can handle it
+      throw error; // 重新抛出错误，以便调用者可以处理
     }
   }
 });
