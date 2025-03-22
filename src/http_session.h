@@ -1,11 +1,15 @@
 #ifndef HTTP_SESSION_H
 #define HTTP_SESSION_H
 
-#include <memory>
 #include <boost/asio.hpp>
-#include "http_request_handler.h"
+#include <boost/asio/ts/buffer.hpp>
+#include <boost/asio/ts/internet.hpp>
+#include <memory>
+#include <iostream>
 #include "http_request.h"
 #include "http_response.h"
+#include "http_request_handler.h"
+#include "asio_context.h"
 
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
 public:
@@ -21,9 +25,8 @@ private:
     void handle_request(const HttpRequest& request);
 
     boost::asio::ip::tcp::socket socket_;
-    HttpRequestHandler& request_handler_;
     boost::asio::streambuf buffer_;
-    const size_t buffer_size = 8192;  // 缓冲区大小
+    HttpRequestHandler& request_handler_;
 };
 
 #endif

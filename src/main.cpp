@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <boost/asio.hpp>
+#include <thread> // Include thread header
 
 using namespace std;
 using namespace boost::asio;
@@ -28,20 +29,32 @@ private:
 
 int main() {
     try {
+        size_t num_threads = thread::hardware_concurrency(); // 获取硬件支持的线程数
+        cout << "硬件支持的线程数: " << num_threads << endl;
         // 创建 AsioContext 对象（使用智能指针）
-        unique_ptr<AsioContext> io_context = make_unique<AsioContext>();
-        // 创建 MyHttpServer 对象（监听 8088 端口）
-        MyHttpServer server(*io_context, 8088);
-        // 运行 AsioContext（启动事件循环）
-        io_context->run();
+        unique_ptr<AsioContext> io_context = make_unique<AsioContext>(num_threads);
+        // 创建 MyHttpServer 对象
+        MyHttpServer server(*io_context, 8765);
+
+        // 运行 AsioContext in a separate thread
+        std::thread io_thread([&]() {
+            io_context->run();
+        });
+
+        // Wait for a short time to ensure threads are running before printing the message
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));  // Add a small delay
 
         // 等待用户输入停止服务器
-        cout << "按下回车键停止服务器." << endl;
+        cout << "按下回车键停止服务器." << endl; // Move here
         cin.get(); // 等待输入
 
         // 停止 AsioContext
         cout << "正在停止 AsioContext." << endl;
         io_context->stop(); // 手动停止
+
+        // Wait for the io_thread to finish
+        io_thread.join();
+
 
     } catch (exception& e) {
         cerr << "异常: " << e.what() << endl;
