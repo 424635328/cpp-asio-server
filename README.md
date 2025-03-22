@@ -73,6 +73,9 @@ brew install boost
 
 2.  创建一个构建目录：
 
+    修改：set(CMAKE_TOOLCHAIN_FILE "你的vcpkg.cmake路径"
+    CACHE STRING "Vcpkg 工具链文件" FORCE)
+
     ```bash
     mkdir build
     cd build
