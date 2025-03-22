@@ -1,3 +1,4 @@
+// main.cpp
 #include "asio_context.h"
 #include "server.h"
 #include "http_session.h"
@@ -18,11 +19,11 @@ namespace po = boost::program_options;
 class MyHttpServer : public Server {
 public:
     // 构造函数
-    MyHttpServer(AsioContext& io_context, short port) : Server(io_context, port), request_handler_() {}
+    MyHttpServer(AsioContext& io_context, short port) : Server(io_context.get_io_context(), port), request_handler_() {}
 
 protected:
     // 创建会话（重写基类方法）
-    shared_ptr<HttpSession> create_session(ip::tcp::socket socket) override {
+    std::shared_ptr<HttpSession> create_session(ip::tcp::socket socket) override {  // 修改返回类型
         return make_shared<HttpSession>(move(socket), request_handler_);
     }
 
@@ -68,7 +69,7 @@ int main(int argc, char* argv[]) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));  // 添加一个小的延迟
                 cout << "Server listening at http://127.0.0.1:" << port << endl;
                 port_found = true;
-
+                
 
                 // 等待用户输入停止服务器
                 cout << "按下回车键停止服务器." << endl;

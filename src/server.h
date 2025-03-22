@@ -4,24 +4,21 @@
 
 #include <boost/asio.hpp>
 #include <memory>
-#include "asio_context.h" 
-
-class AsioContext;
-class HttpSession;
+#include "http_session.h" // 添加头文件
 
 class Server {
 public:
-    Server(AsioContext& io_context, short port);
-    virtual ~Server();
+    Server(boost::asio::io_context& io_context, short port);  // 保持不变
+    virtual ~Server(); // 确保析构函数是虚函数
 
+    void run();
 protected:
-    virtual std::shared_ptr<HttpSession> create_session(boost::asio::ip::tcp::socket socket) = 0; // 创建会话的纯虚函数，子类必须实现
-
+    virtual std::shared_ptr<HttpSession> create_session(boost::asio::ip::tcp::socket socket) = 0; // 修改返回类型
 private:
-    void do_accept(); // 异步接受连接
+    void do_accept();
 
-    boost::asio::io_context& io_context_; // io_context引用
-    boost::asio::ip::tcp::acceptor acceptor_; // acceptor对象
+    boost::asio::io_context& io_context_;
+    boost::asio::ip::tcp::acceptor acceptor_;
 };
 
 #endif

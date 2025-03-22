@@ -1,6 +1,7 @@
 // asio_context.cpp
 #include "asio_context.h"
 #include <iostream>
+#include <boost/asio/post.hpp>
 
 using namespace std;
 using namespace boost::asio;
@@ -49,7 +50,12 @@ void AsioContext::stop() {
     if (running_) {
         running_ = false;
         cout << "AsioContext::stop - 停止 io_context_." << endl;
-        io_context_.stop();
+
+        for (size_t i = 0; i < threads_.size(); ++i) {
+            boost::asio::post(io_context_, [](){}); //  Post an empty task
+        }
+
+        io_context_.stop(); // Stop accepting new tasks
         cout << "AsioContext::stop - 加入线程." << endl;
         for (auto& thread : threads_) {
             if (thread.joinable()) {
