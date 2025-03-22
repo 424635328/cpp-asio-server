@@ -1,14 +1,55 @@
+// http_request_handler.cpp - 实现 HTTP 请求处理类
 #include "asio_context.h"
 #include "http_request_handler.h"
+#include "http_request.h"
+#include "http_response.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <algorithm>  // transform
+#include <iomanip>   // quoted
 
 using namespace std;
 
-HttpResponse HttpRequestHandler::handle_request(const HttpRequest& request) {
-    cout << "收到请求: " << request.method << " " << request.uri << endl;
+// Helper function to URL decode a string
+std::string url_decode(const std::string& str) {
+    std::string result;
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '%' && i + 2 < str.length()) {
+            int hex_val;
+            std::stringstream ss;
+            ss << std::hex << str.substr(i + 1, 2);
+            ss >> hex_val;
+            result += static_cast<char>(hex_val);
+            i += 2;
+        } else if (str[i] == '+') {
+            result += ' ';
+        } else {
+            result += str[i];
+        }
+    }
+    return result;
+}
+
+std::unordered_map<std::string, std::string> parse_post_data(const std::string& body) {
+    std::unordered_map<std::string, std::string> data;
+    std::stringstream ss(body);
+    std::string pair, key, value;
+
+    while (std::getline(ss, pair, '&')) {
+        size_t pos = pair.find('=');
+        if (pos != std::string::npos) {
+            key = pair.substr(0, pos);
+            value = pair.substr(pos + 1);
+            data[url_decode(key)] = url_decode(value); // 解码并存储键值对
+        }
+    }
+    return data;
+}
+
+// Serve static files
+HttpResponse HttpRequestHandler::handle_static_file_request(const HttpRequest& request) {
     HttpResponse response;
     response.status_code = 200;
 
@@ -56,4 +97,40 @@ HttpResponse HttpRequestHandler::handle_request(const HttpRequest& request) {
     }
 
     return response;
+}
+
+HttpResponse HttpRequestHandler::handle_request(const HttpRequest& request) {
+    cout << "收到请求: " << request.method << " " << request.uri << endl;
+    if (request.uri == "/contact" && request.method == "POST") {
+        auto post_data = parse_post_data(request.body);
+
+        std::string name = post_data["name"];
+        std::string email = post_data["email"];
+        std::string message = post_data["message"];
+
+        if (name.empty() || email.empty() || message.empty()) {
+            std::cerr << "Error: Contact form submission with missing fields." << std::endl;
+            HttpResponse response;
+            response.status_code = 400; 
+            response.headers["Content-Type"] = "text/html; charset=utf-8";
+            response.body = "<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><title>错误</title></head><body><h1>错误</h1><p>请填写所有字段！</p><a href='/web/contact.html'>返回</a><script src=\"/web/beautify.js\"></script></body></html>";
+
+            return response;
+        }
+
+        std::cout << "Contact Form Submission:" << std::endl;
+        std::cout << "Name: " << std::quoted(name) << std::endl;
+        std::cout << "Email: " << std::quoted(email) << std::endl;
+        std::cout << "Message: " << std::quoted(message) << std::endl;
+
+        HttpResponse response;
+        response.status_code = 200;
+        response.version = "HTTP/1.1";
+        response.headers["Content-Type"] = "text/html; charset=utf-8";  
+        response.body = "<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><title>错误</title></head><body><h1>错误</h1><p>请填写所有字段！</p><a href='/web/contact.html'>返回</a><script src=\"/web/beautify.js\"></script></body></html>";
+        return response;
+
+    } else {
+        return handle_static_file_request(request);
+    }
 }

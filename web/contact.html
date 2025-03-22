@@ -1,55 +1,139 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="联系我们 - 通过以下方式联系本网站。">
-  <title>联系我们 - 我的 C++ HTTP 服务器网站</title>
-  <link rel="stylesheet" type="text/css" href="/web/style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>联系我们</h1>
-    <p>您可以通过以下方式与我们联系：</p>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="联系我们 - 通过以下方式联系本网站。">
+    <title>联系我们 - 我的 C++ HTTP 服务器网站</title>
+    <link rel="stylesheet" type="text/css" href="/web/style.css">
+    <style>
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>联系我们</h1>
+      <p>您可以通过以下方式与我们联系：</p>
 
-    <section id="contact-info">
-      <h2>联系信息</h2>
-      <ul>
-        <li><b>电子邮件：</b> contact@example.com</li>
-        <li><b>电话：</b> +86</li>
-        <li><b>地址：</b> 中国</li>
-      </ul>
-    </section>
+      <section id="contact-info">
+        <h2>联系信息</h2>
+        <ul>
+          <li><b>电子邮件：</b> contact@example.com</li>
+          <li><b>电话：</b> +86</li>
+          <li><b>地址：</b> 中国</li>
+        </ul>
+      </section>
 
-    <section id="contact-form">
-      <h2>联系表单</h2>
-      <form action="#" method="post">
-        <label for="name">姓名：</label><br>
-        <input type="text" id="name" name="name"><br><br>
+      <section id="contact-form">
+        <h2>联系表单</h2>
+        <form action="/contact" method="post" id="contactForm">
+          <label for="name">姓名：</label><br>
+          <input type="text" id="name" name="name"><br>
+          <span id="nameError" class="error"></span><br>
 
-        <label for="email">电子邮件：</label><br>
-        <input type="email" id="email" name="email"><br><br>
+          <label for="email">电子邮件：</label><br>
+          <input type="email" id="email" name="email"><br>
+          <span id="emailError" class="error"></span><br>
 
-        <label for="message">留言：</label><br>
-        <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+          <label for="message">留言：</label><br>
+          <textarea id="message" name="message" rows="4"
+            cols="50"></textarea><br>
+          <span id="messageError" class="error"></span><br>
 
-        <input type="submit" value="发送" class="button">
-      </form>
-    </section>
+          <input type="submit" value="发送" class="button">
+          <span id="formSuccess" class="success"></span>
+          <span id="formError" class="error"></span>
+        </form>
+      </section>
 
-    <nav>
-      <ul>
-        <li><a href="/">首页</a></li>
-        <li><a href="/web/about.html">关于</a></li>
-        <li><a href="/web/services.html">服务</a></li>
-        <li><a href="/web/contact.html">联系我们</a></li>
-        <li><a href="https://www.bilibili.com/" class="button">了解更多</a></li>
-      </ul>
-    </nav>
-  </div>
+      <nav>
+        <ul>
+          <li><a href="/">首页</a></li>
+          <li><a href="/web/about.html">关于</a></li>
+          <li><a href="/web/services.html">服务</a></li>
+          <li><a href="/web/contact.html">联系我们</a></li>
+          <li><a href="https://www.bilibili.com/" class="button">了解更多</a></li>
+        </ul>
+      </nav>
+    </div>
 
-  <footer>
-    © 2025 一个 C++ HTTP 服务器网站
-  </footer>
-</body>
+    <footer>
+      © 2025 一个 C++ HTTP 服务器网站
+    </footer>
+    <script src="/web/beautify.js"></script>
+    <script>
+    document.getElementById("contactForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // 阻止默认提交
+  
+      let name = document.getElementById("name").value;
+      let email = document.getElementById("email").value;
+      let message = document.getElementById("message").value;
+  
+      let nameError = document.getElementById("nameError");
+      let emailError = document.getElementById("emailError");
+      let messageError = document.getElementById("messageError");
+      let formSuccess = document.getElementById("formSuccess");
+      let formError = document.getElementById("formError");
+  
+      nameError.textContent = "";
+      emailError.textContent = "";
+      messageError.textContent = "";
+      formSuccess.textContent = "";
+      formError.textContent = "";
+  
+      let isValid = true;
+  
+      if (name === "") {
+          nameError.textContent = "姓名不能为空";
+          isValid = false;
+      }
+  
+      if (email === "") {
+          emailError.textContent = "电子邮件不能为空";
+          isValid = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          emailError.textContent = "电子邮件格式不正确";
+          isValid = false;
+      }
+  
+      if (message === "") {
+          messageError.textContent = "留言不能为空";
+          isValid = false;
+      }
+  
+      if (!isValid) {
+          return; //  如果客户端验证失败，直接返回
+      }
+  
+      // 使用 fetch API 提交表单
+      fetch("/contact", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: "name=" + encodeURIComponent(name) +
+                "&email=" + encodeURIComponent(email) +
+                "&message=" + encodeURIComponent(message)
+      })
+      .then(response => {
+          console.log("Response status:", response.status); // 添加这行代码
+          if (response.ok) {
+              window.location.href = "/web/contact_success.html"; // 替换为你的成功页面 URL
+          } else {
+              console.error("Server returned an error:", response.status); // 添加这行代码
+              window.location.href = "/web/contact_error.html?status=" + response.status; // 替换为你的错误页面 URL
+          }
+      })
+      .catch(error => {
+          console.error("Fetch error:", error); // 添加这行代码
+          formError.textContent = "发生错误: " + error.message; // 或者跳转到错误页面
+      });
+  });
+  </script>
+  </body>
 </html>

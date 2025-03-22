@@ -1,115 +1,223 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const numThreads = navigator.hardwareConcurrency || 4; // 获取硬件线程数，默认为4
-  const threadCountElement = document.getElementById("thread-count"); // 获取线程数显示元素
-  const wasmButton = document.getElementById("wasmButton"); // 获取wasm按钮
-  const dynamicContent = document.getElementById("dynamicContent"); // 获取动态内容显示元素
-  const imageInput = document.getElementById("imageInput"); // 获取图片输入元素
-  const wasmModulePath = "/web/module.wasm"; // wasm模块路径
+  const numThreads = navigator.hardwareConcurrency || 4;
+  const threadCountElement = document.getElementById("thread-count");
+  const wasmButton = document.getElementById("wasmButton");
+  const dynamicContent = document.getElementById("dynamicContent");
+  const imageInput = document.getElementById("imageInput");
+  const wasmModulePath = "/web/module.wasm";
 
-  let imageWidth = 200; // 默认图片宽度
-  let imageHeight = 150; // 默认图片高度
+  let imageWidth = 200;
+  let imageHeight = 150;
+  let wasmInstance = null;
+  let rgbArray = null; // 保存图像数据
 
   if (threadCountElement) {
-    threadCountElement.innerText = numThreads; // 设置线程数
+    threadCountElement.innerText = numThreads;
     console.log("线程数已成功写入到 threadCountElement");
   } else {
     console.warn("未找到 threadCountElement 元素，无法显示线程数");
   }
 
+  //  模拟 WASI 环境 (简单的 polyfill)
+  const wasi = {
+    args: [],
+    env: {},
+    fd_write: function (fd, iovs_ptr, iovs_len, nwritten_ptr) {
+      // 简单的 stdout 模拟
+      let memory = wasmInstance.exports.memory; // 获取内存
+      let view = new DataView(memory.buffer);
+
+      let str = "";
+      for (let i = 0; i < iovs_len; i++) {
+        let base = view.getInt32(iovs_ptr + i * 8, true); // iovs[i].buf
+        let len = view.getInt32(iovs_ptr + i * 8 + 4, true);  // iovs[i].buf_len
+        str += new TextDecoder().decode(new Uint8Array(memory.buffer, base, len));
+      }
+
+      console.log("WASI Output:", str); // 输出到控制台
+      return 0; // 成功
+    },
+    proc_exit: function(code) {
+        console.log("WASM program exited with code:", code);
+    },
+    // 示例：添加 clock_time_get (根据你的 WASM 模块的需求添加)
+    clock_time_get: function(id, precision, out_ptr) {
+        // 模拟一个时间
+        const now = BigInt(Date.now());
+        let memory = wasmInstance.exports.memory;
+        let view = new DataView(memory.buffer);
+        view.setBigInt64(out_ptr, now, true); // Little-endian
+        return 0;
+    },
+    random_get: function(buf_ptr, buf_len) {
+        let memory = wasmInstance.exports.memory;
+        let buffer = new Uint8Array(memory.buffer, buf_ptr, buf_len);
+        for (let i = 0; i < buf_len; i++) {
+            buffer[i] = Math.floor(Math.random() * 256); // 0-255
+        }
+        return 0;
+    }
+  };
+
   async function loadWasmModule(modulePath) {
-    dynamicContent.innerText = "正在加载 WASM 模块..."; // 显示加载信息
+    dynamicContent.innerText = "正在加载 WASM 模块...";
     try {
       console.log("开始加载 WASM 模块:", modulePath);
-      const response = await fetch(modulePath); // 获取wasm模块
+      const response = await fetch(modulePath);
       console.log("WASM 模块加载状态:", response.status);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`); // 抛出错误
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const buffer = await response.arrayBuffer(); // 获取buffer
-      const result = await WebAssembly.instantiate(buffer); // 实例化wasm模块
+      const buffer = await response.arrayBuffer();
+      console.log("WASM buffer 获取成功，buffer大小:", buffer.byteLength);
 
-      const instance = result.instance; // 获取实例
+      // 创建 importObject，包含 WASI 导入
+      const importObject = {
+        wasi_snapshot_preview1: wasi, //  关键: 添加 WASI
+        env: {
+          // 添加 emscripten_notify_memory_growth 函数
+          emscripten_notify_memory_growth: function() {
+            //  这个函数可以为空，但必须存在且可调用
+            console.log("emscripten_notify_memory_growth called"); // 可以添加日志
+          },
 
-      console.log("WASM 模块实例化完成");
-      console.log("导出的函数:", instance.exports);
+          // 示例：添加 JavaScript 函数导入
+          my_js_function: function (arg) {
+            console.log("JavaScript function called with:", arg);
+          },
+          // 添加 console.log 函数的导入 (如果你的 WASM 需要 console.log)
+          console_log: function(arg) {
+            console.log("WASM console.log:", arg);
+          }
+        },
+      };
 
-      return instance; // 返回实例
+      console.log("importObject 创建成功:", importObject);
+
+      try {
+        const result = await WebAssembly.instantiate(buffer, importObject);
+        console.log("WebAssembly.instantiate 成功:", result);
+
+        const instance = result.instance;
+        wasmInstance = instance;
+
+        console.log("WASM 模块实例化完成");
+        console.log("导出的函数:", instance.exports);
+
+        return instance;
+      } catch (instantiateError) {
+        console.error("WebAssembly.instantiate 失败:", instantiateError);
+        dynamicContent.innerText = "WASM 模块加载失败: " + instantiateError.message; // 显示在页面上
+        throw instantiateError;
+      }
     } catch (error) {
       console.error("加载 WASM 模块时发生错误:", error);
-      let errorMessage = "错误：无法加载 WASM 模块。\n" + error.message; // 错误信息
+      let errorMessage = "错误：无法加载 WASM 模块。\n" + error.message;
       if (error.stack) {
-        errorMessage += "\n" + error.stack; // 添加堆栈信息
+        errorMessage += "\n" + error.stack;
       }
-      dynamicContent.innerText = errorMessage; // 显示错误信息
+      dynamicContent.innerText = errorMessage;
       throw error;
     }
   }
 
   function processImage(file) {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader(); // 文件读取
+      const reader = new FileReader();
       reader.onload = function (e) {
-        const img = new Image(); // 创建图片对象
+        const img = new Image();
         img.onload = function () {
-          imageWidth = img.width; // 获取图片宽度
-          imageHeight = img.height; // 获取图片高度
-          const rgbCanvas = document.createElement("canvas"); // 创建canvas
-          rgbCanvas.width = imageWidth; // 设置canvas宽度
-          rgbCanvas.height = imageHeight; // 设置canvas高度
-          const rgbCtx = rgbCanvas.getContext("2d"); // 获取context
-          rgbCtx.drawImage(img, 0, 0); // 绘制图片
-          const imageData = rgbCtx.getImageData(0, 0, imageWidth, imageHeight); // 获取imageData
-          resolve(new Uint8Array(imageData.data.buffer)); // 返回Uint8Array
+          imageWidth = img.width;
+          imageHeight = img.height;
+          const rgbCanvas = document.createElement("canvas");
+          rgbCanvas.width = imageWidth;
+          rgbCanvas.height = imageHeight;
+          const rgbCtx = rgbCanvas.getContext("2d");
+          rgbCtx.drawImage(img, 0, 0);
+          const imageData = rgbCtx.getImageData(0, 0, imageWidth, imageHeight);
+          rgbArray = new Uint8Array(imageData.data.buffer);  // 保存图像数据
+          resolve(rgbArray);  // 返回 Uint8Array
         };
-        img.onerror = reject; // 错误处理
-        img.src = e.target.result; // 设置图片src
+        img.onerror = () => {
+           dynamicContent.innerText = "图片加载失败，请检查图片是否损坏或格式是否正确。"; // 显示在页面上
+           reject();
+        }
+        img.src = e.target.result;
       };
-      reader.onerror = reject; // 错误处理
-      reader.readAsDataURL(file); // 读取文件
+      reader.onerror = () => {
+         dynamicContent.innerText = "无法读取图片文件。";  // 显示在页面上
+         reject();
+      }
+      reader.readAsDataURL(file);
     });
   }
-    function createGrayscaleImageData(grayResult, width, height) {
-        const grayImageData = new ImageData(width, height); // 创建ImageData
-        const data = grayImageData.data; // 获取data
-        for (let i = 0; i < width * height; i++) { // 遍历像素
-            const grayValue = grayResult[i]; // 获取灰度值
-            data[i * 4] = grayValue; // 设置R
-            data[i * 4 + 1] = grayValue; // 设置G
-            data[i * 4 + 2] = grayValue; // 设置B
-            data[i * 4 + 3] = 255; // 设置A
-        }
-        return grayImageData; // 返回ImageData
+
+  function createGrayscaleImageData(grayResult, width, height) {
+    const grayImageData = new ImageData(width, height);
+    const data = grayImageData.data;
+    for (let i = 0; i < width * height; i++) {
+      const grayValue = grayResult[i];
+      data[i * 4] = grayValue;
+      data[i * 4 + 1] = grayValue;
+      data[i * 4 + 2] = grayValue;
+      data[i * 4 + 3] = 255;
     }
+    return grayImageData;
+  }
 
   async function convertToGrayscale(instance, rgbArray) {
     try {
       if (!rgbArray) {
-        throw new Error("请先选择图片！"); // 抛出错误
+        dynamicContent.innerText = "请先选择图片！";
+        throw new Error("请先选择图片！");
       }
 
       if (!instance) {
-        throw new Error("WASM 实例未加载！"); // 抛出错误
+         dynamicContent.innerText = "WASM 实例未加载！";
+        throw new Error("WASM 实例未加载！");
       }
 
-      // 1.  从 WASM 实例中获取导出的函数和内存
-      const memory = instance.exports.a; 
-      const gray_scale = instance.exports.c; // 获取灰度函数
-      const allocate_memory = instance.exports.b; // 分配内存函数
-      const free_memory = instance.exports.d; // 释放内存函数
+      console.log("convertToGrayscale: instance =", instance);
+      console.log("convertToGrayscale: instance.exports =", instance.exports);
+
+      const memory = instance.exports.memory;
+      const gray_scale = instance.exports.gray_scale;
+      const allocate_memory = instance.exports.allocate_memory;
+      const free_memory = instance.exports.free_memory;
       const width = imageWidth;
       const height = imageHeight;
 
-      // 2. 计算需要的内存大小
+       console.log("convertToGrayscale: memory =", memory);
+       console.log("convertToGrayscale: gray_scale =", gray_scale);
+       console.log("convertToGrayscale: allocate_memory =", allocate_memory);
+       console.log("convertToGrayscale: free_memory =", free_memory);
+
+      if (
+        typeof allocate_memory !== "function" ||
+        typeof free_memory !== "function" ||
+        typeof gray_scale !== "function" ||
+        !memory
+      ) {
+        dynamicContent.innerText = "WASM 模块缺少必要的导出函数或内存。请检查 WASM 模块是否正确编译。";
+        throw new Error(
+          "WASM 模块缺少必要的导出函数或内存。请检查 WASM 模块是否正确编译。"
+        );
+      }
+
       const rgbDataByteSize = rgbArray.length * rgbArray.BYTES_PER_ELEMENT;
       const grayDataByteSize =
         width * height * Uint8ClampedArray.BYTES_PER_ELEMENT;
 
-      // 3. 在 WASM 内存中分配空间
-      const rgbDataPtr = allocate_memory(rgbDataByteSize);
-      const grayDataPtr = allocate_memory(grayDataByteSize);
+      let rgbDataPtr, grayDataPtr;
+      try {
+        rgbDataPtr = allocate_memory(rgbDataByteSize);
+        grayDataPtr = allocate_memory(grayDataByteSize);
+      } catch (e) {
+        dynamicContent.innerText = "WASM 内存分配失败：" + e.message; // 显示在页面上
+        throw new Error("WASM 内存分配失败：" + e.message);
+      }
 
-      // 4. 将 RGB 数据写入 WASM 内存
       const rgbDataHeap = new Uint8Array(
         memory.buffer,
         rgbDataPtr,
@@ -117,59 +225,112 @@ document.addEventListener("DOMContentLoaded", function () {
       );
       rgbDataHeap.set(rgbArray);
 
-      // 5. 调用 WASM 函数
-      gray_scale(rgbDataPtr, width, height, grayDataPtr);
+      try {
+        gray_scale(rgbDataPtr, width, height, grayDataPtr);
+      } catch (e) {
+        dynamicContent.innerText = "灰度转换函数执行失败：" + e.message; // 显示在页面上
+        throw new Error("灰度转换函数执行失败：" + e.message);
+      }
 
-      // 6. 从 WASM 内存读取灰度数据
       const grayResult = new Uint8ClampedArray(
         memory.buffer,
         grayDataPtr,
         width * height
       );
 
-      // 7. 创建灰度图像并显示
-      const outputWidth = 200; // 输出宽度
-      const outputHeight = 150; //输出高度
+      const outputWidth = 200;
+      const outputHeight = 150;
 
-      const grayCanvas = document.createElement("canvas"); // 创建canvas
-      grayCanvas.width = outputWidth; // 设置canvas宽度
-      grayCanvas.height = outputHeight; // 设置canvas高度
-      const grayCtx = grayCanvas.getContext("2d"); // 获取context
+      const grayCanvas = document.createElement("canvas");
+      grayCanvas.width = outputWidth;
+      grayCanvas.height = outputHeight;
+      const grayCtx = grayCanvas.getContext("2d");
 
-        const grayImageData = createGrayscaleImageData(grayResult, width, height);
-        //    使用createImageBitmap进行缩放，性能更好
-        createImageBitmap(grayImageData).then(bitmap => {
-            grayCtx.drawImage(bitmap, 0, 0, outputWidth, outputHeight); // 绘制灰度图片
-            dynamicContent.innerHTML = ""; // 清空内容
-            dynamicContent.appendChild(grayCanvas); // 添加canvas
-        });
+      const grayImageData = createGrayscaleImageData(grayResult, width, height);
 
-      // 8. 释放 WASM 内存
-      free_memory(rgbDataPtr, rgbDataByteSize);
-      free_memory(grayDataPtr, grayDataByteSize);
+      // 创建 ImageBitmap 并绘制
+      createImageBitmap(grayImageData).then((bitmap) => {
+          grayCtx.drawImage(bitmap, 0, 0, outputWidth, outputHeight);
+
+          // 创建可点击放大的图像包装器
+          const imageWrapper = document.createElement("div");
+          imageWrapper.style.position = "relative"; // 允许定位放大镜
+          imageWrapper.style.display = "inline-block"; // 使尺寸适应内容
+          imageWrapper.style.cursor = "zoom-in"; // 鼠标悬停时的光标
+
+          // 添加放大的样式（你需要在 CSS 中定义这些）
+          grayCanvas.classList.add("grayscale-image");
+
+          // 将 canvas 添加到包装器
+          imageWrapper.appendChild(grayCanvas);
+
+          // 移除之前的图像（如果存在）
+          dynamicContent.innerHTML = "";
+          dynamicContent.appendChild(imageWrapper);
+
+          // 点击时放大/缩小
+          imageWrapper.addEventListener("click", () => {
+              if (imageWrapper.classList.contains("zoomed")) {
+                  imageWrapper.classList.remove("zoomed");
+                  imageWrapper.style.cursor = "zoom-in";
+              } else {
+                  imageWrapper.classList.add("zoomed");
+                  imageWrapper.style.cursor = "zoom-out";
+              }
+          });
+      });
+      try {
+        free_memory(rgbDataPtr, rgbDataByteSize);
+        free_memory(grayDataPtr, grayDataByteSize);
+      } catch (e) {
+        console.warn("WASM 内存释放失败：" + e.message);
+      }
     } catch (error) {
       console.error("WASM 执行过程中发生错误:", error);
-      dynamicContent.innerText = error.message; // 显示错误信息
+      // 确保错误信息显示在页面上
+      dynamicContent.innerText = error.message;
     }
   }
+
   if (imageInput) {
     imageInput.addEventListener("change", async function () {
-      const file = imageInput.files[0]; // 获取文件
+      const file = imageInput.files[0];
       if (file) {
         try {
-          const rgbArray = await processImage(file); // 处理图片
+          dynamicContent.innerText = "正在处理图片..."; // 提示用户正在处理
+           await processImage(file); // 处理图片. rgbArray 会被赋值
           console.log("图像处理成功");
-          if (wasmButton && dynamicContent) {
-            wasmButton.onclick = async () => { //使用 onclick 避免多次绑定
-              console.log("WASM 按钮被点击");
-              try {
-                const instance = await loadWasmModule(wasmModulePath); // 加载wasm模块
-                console.log("WASM 模块加载和实例化成功");
+          dynamicContent.innerText = ""; // 清空"正在处理图片..."的提示
 
-                await convertToGrayscale(instance, rgbArray); // 转换成灰度图
-              } catch (error) {
-                console.error("WASM 执行过程中发生错误:", error);
-              }
+          // 启用按钮
+          if (wasmButton) {
+              wasmButton.disabled = false;
+          }
+
+          if (wasmButton && dynamicContent) {
+             // 移除之前的 onclick 事件监听器
+             wasmButton.onclick = null;
+
+             wasmButton.onclick = async () => {
+                console.log("WASM 按钮被点击");
+
+                if (!rgbArray) {  //  如果没有图像数据
+                    dynamicContent.innerText = "请先选择一张图片！";
+                    return;
+                }
+
+                try {
+                    if (!wasmInstance) {
+                        wasmInstance = await loadWasmModule(wasmModulePath);
+                        console.log("WASM 模块加载和实例化成功");
+                    }
+
+                    await convertToGrayscale(wasmInstance, rgbArray);
+
+                } catch (error) {
+                    console.error("WASM 执行过程中发生错误:", error);
+                    dynamicContent.innerText = error.message;
+                }
             };
           } else {
             console.warn(
@@ -178,11 +339,35 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } catch (error) {
           console.error("图像处理失败:", error);
-          dynamicContent.innerText = "图像处理失败: " + error.message; // 显示错误信息
+          dynamicContent.innerText = "图像处理失败: " + error.message;
+          rgbArray = null;  // 重置图像数据
+
+          // 禁用按钮
+          if (wasmButton) {
+              wasmButton.disabled = true;
+          }
         }
+      } else {
+        rgbArray = null;  // 如果没有选择文件，重置图像数据
+        dynamicContent.innerText = "请选择一张图片。";
+        // 禁用按钮
+        if (wasmButton) {
+            wasmButton.disabled = true;
+        }
+
       }
     });
   } else {
     console.warn("未找到 imageInput 元素");
   }
+
+    //  初始状态禁用按钮，直到选择了图像
+    if (wasmButton) {
+        wasmButton.disabled = true; // 初始状态禁用
+
+        // 添加监听器，根据 input 是否有文件来启用/禁用按钮
+        imageInput.addEventListener("change", function() {
+            wasmButton.disabled = !imageInput.files.length; // 检查是否有选择文件
+        });
+    }
 });
