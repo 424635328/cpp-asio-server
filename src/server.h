@@ -15,13 +15,13 @@ public:
     virtual ~Server();
 
 protected:
-    virtual std::shared_ptr<HttpSession> create_session(boost::asio::ip::tcp::socket socket) = 0;
+    virtual std::shared_ptr<HttpSession> create_session(boost::asio::ip::tcp::socket socket) = 0; // 创建会话的纯虚函数，子类必须实现
 
 private:
-    void do_accept();
+    void do_accept(); // 异步接受连接
 
-    boost::asio::io_context& io_context_;
-    boost::asio::ip::tcp::acceptor acceptor_;
+    boost::asio::io_context& io_context_; // io_context引用
+    boost::asio::ip::tcp::acceptor acceptor_; // acceptor对象
 };
 
 #endif

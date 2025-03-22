@@ -8,7 +8,7 @@ std::string HttpResponse::to_string() const {
     
     // 避免修改原始对象
     HttpResponse mutableResponse = *this;
-    mutableResponse.headers["Content-Length"] = std::to_string(body.size()); // Add Content-Length header
+    mutableResponse.headers["Content-Length"] = std::to_string(body.size()); // 添加 Content-Length header
 
     for (const auto& header : mutableResponse.headers) {
         ss << header.first << ": " << header.second << "\r\n";

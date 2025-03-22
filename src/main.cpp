@@ -36,11 +36,11 @@ int main(int argc, char* argv[]) {
         // 定义命令行选项
         po::options_description desc("Allowed options");
         desc.add_options()
-            ("help", "produce help message")
-            ("port", po::value<short>()->default_value(8765), "set listening port");
+            ("help", "produce help message") // 帮助信息
+            ("port", po::value<short>()->default_value(8765), "set listening port"); // 设置监听端口
 
         po::variables_map vm;
-        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::store(po::parse_command_line(argc, argv, desc), vm); // 解析命令行参数
         po::notify(vm);
 
         if (vm.count("help")) {
@@ -48,28 +48,24 @@ int main(int argc, char* argv[]) {
             return 0;
         }
 
-        short port = vm["port"].as<short>();
+        short port = vm["port"].as<short>(); // 获取端口号
         bool port_found = false;
 
-        for (int attempt = 0; attempt < 100; ++attempt)  // Try a range of ports
+        for (int attempt = 0; attempt < 100; ++attempt)  // 尝试一系列端口
         {
             try
             {
                 size_t num_threads = thread::hardware_concurrency(); // 获取硬件支持的线程数
                 cout << "硬件支持的线程数: " << num_threads << endl;
-                // 创建 AsioContext 对象（使用智能指针）
                 unique_ptr<AsioContext> io_context = make_unique<AsioContext>(num_threads);
 
-                // 创建 MyHttpServer 对象
                 MyHttpServer server(*io_context, port);
 
-                // 运行 AsioContext in a separate thread
                 std::thread io_thread([&]() {
-                    io_context->run();
+                    io_context->run(); // 运行 AsioContext
                 });
 
-                // Wait for a short time to ensure threads are running before printing the message
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));  // Add a small delay
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));  // 添加一个小的延迟
                 cout << "Server listening at http://127.0.0.1:" << port << endl;
                 port_found = true;
 
@@ -83,8 +79,8 @@ int main(int argc, char* argv[]) {
                 io_context->stop(); // 手动停止
 
                 // Wait for the io_thread to finish
-                io_thread.join();
-                break; // Exit the loop as we've successfully started the server
+                io_thread.join(); // 等待 IO 线程结束
+                break; // 成功启动服务器后退出循环
 
 
             }
@@ -93,7 +89,7 @@ int main(int argc, char* argv[]) {
                 if (ex.code() == boost::system::errc::address_in_use)
                 {
                     cout << "Port " << port << " is in use. Trying the next port." << endl;
-                    port++; // Increment to try the next port.
+                    port++; // 递增以尝试下一个端口
                 }
                 else
                 {
