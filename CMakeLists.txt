@@ -18,8 +18,8 @@ set(Boost_USE_STATIC_LIBS OFF)   # 强制使用动态库
 set(Boost_USE_MULTITHREADED ON)  # 强制使用多线程库
 set(Boost_DEBUG ON)              # 启用调试信息
 
-# 查找 Boost 库，system 和 thread 组件是必需的
-find_package(Boost REQUIRED COMPONENTS system thread)
+# 查找 Boost 库，system、thread 和 program_options 组件是必需的
+find_package(Boost REQUIRED COMPONENTS system thread program_options)
 
 # 检查是否找到 Boost 库
 if(Boost_FOUND)
@@ -29,6 +29,7 @@ if(Boost_FOUND)
     message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")   # Boost 库文件路径
     message(STATUS "Boost_VERSION: ${Boost_VERSION}")     # Boost 版本号
     message(STATUS "Boost_THREAD_LIBRARY: ${Boost_THREAD_LIBRARY}") # Boost 线程库的路径
+    message(STATUS "Boost_PROGRAM_OPTIONS_LIBRARY: ${Boost_PROGRAM_OPTIONS_LIBRARY}") # Boost program_options库的路径
 else()
     # 如果没有找到 Boost 库，则报错并停止编译
     message(STATUS "Boost_FOUND is FALSE")
@@ -41,5 +42,5 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # 添加可执行文件
 add_executable(my_server_framework ${SOURCES})
 
-# 链接 Boost 库 (system 和 thread 组件) 和 ws2_32 库 (Windows socket 库)
-target_link_libraries(my_server_framework Boost::system Boost::thread ws2_32)
+# 链接 Boost 库 (system、thread 和 program_options 组件) 和 ws2_32 库 (Windows socket 库)
+target_link_libraries(my_server_framework Boost::system Boost::thread Boost::program_options ws2_32)

@@ -8,8 +8,8 @@
 #include <iostream>
 #include "http_request.h"
 #include "http_response.h"
-#include "http_request_handler.h"
-#include "asio_context.h"
+
+class HttpRequestHandler; // 前置声明
 
 class HttpSession : public std::enable_shared_from_this<HttpSession> {
 public:
@@ -21,7 +21,7 @@ public:
 
 private:
     void do_read();
-    void do_write(const HttpResponse& response);
+    void do_write(std::shared_ptr<HttpResponse> response);  // 修改参数类型
     void handle_request(const HttpRequest& request);
 
     boost::asio::ip::tcp::socket socket_;

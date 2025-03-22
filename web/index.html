@@ -28,13 +28,13 @@
         </ul>
       </section>
 
-      <nav>
+      <nav aria-label="main navigation">
         <ul>
           <li><a href="/">首页</a></li>
           <li><a href="/web/about.html">关于</a></li>
           <li><a href="/web/services.html">服务</a></li>
           <li><a href="/web/contact.html">联系我们</a></li>
-          <li><a href="#" class="button">了解更多</a></li>
+          <li><a href="https://www.bilibili.com/" class="button">了解更多</a></li>
         </ul>
       </nav>
 
@@ -48,11 +48,12 @@
 
       <section id="wasm-section">
         <h2>WebAssembly 集成</h2>
-        <p>本网站利用 WebAssembly 直接在您的浏览器中执行计算密集型任务。 <code>module.wasm</code>
-          文件包含用于此目的的 WebAssembly 模块。</p>
-        <p id="dynamic-content">WASM 结果将显示在此处。</p>
-
-        <button class="button" id="wasm-button">运行 WASM 计算</button>
+        <p>本网站利用 WebAssembly 直接在您的浏览器中执行计算密集型任务。</p>
+        <!-- 添加图片选择器 -->
+        <label for="imageInput">选择图片：</label>
+        <input type="file" id="imageInput" accept="image/*" title="选择图片文件">
+        <p id="dynamicContent">灰度图将显示在此处。</p>
+        <button class="button" id="wasmButton">转换成灰度图</button>
       </section>
 
       <section id="extensions">
@@ -70,7 +71,7 @@
     </div>
 
     <footer>
-      © 2025 我的 C++ HTTP 服务器网站
+      © 2025 一个 C++ HTTP 服务器网站
     </footer>
     <script src="/web/scripts.js"></script>
   </body>

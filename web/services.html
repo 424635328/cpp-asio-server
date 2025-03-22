@@ -21,54 +21,19 @@
       </ul>
     </section>
 
-    <section id="wasm-example">
-      <h2>WebAssembly 示例</h2>
-      <p>您可以尝试运行以下 WebAssembly 示例：</p>
-      <button class="button" id="wasm-button">运行示例</button>
-      <p id="wasm-result">WASM 结果将显示在此处。</p>
-    </section>
-
     <nav>
       <ul>
         <li><a href="/">首页</a></li>
         <li><a href="/web/about.html">关于</a></li>
         <li><a href="/web/services.html">服务</a></li>
         <li><a href="/web/contact.html">联系我们</a></li>
-        <li><a href="#" class="button">了解更多</a></li>
+        <li><a href="https://www.bilibili.com/" class="button">了解更多</a></li>
       </ul>
     </nav>
   </div>
 
   <footer>
-    © 2025 我的 C++ HTTP 服务器网站
+    © 2025 一个 C++ HTTP 服务器网站
   </footer>
-   <script>
-      document.addEventListener('DOMContentLoaded', function() {
-          const wasmButton = document.getElementById('wasm-button');
-          const dynamicContent = document.getElementById('wasm-result');
-
-          if (wasmButton && dynamicContent) {
-              wasmButton.addEventListener('click', function() {
-                  loadWasmModule('/web/module.wasm')
-                      .then(instance => {
-                          const result = instance.exports.calculate(20, 30);
-                          dynamicContent.innerText = "WASM 结果: " + result;
-                      })
-                      .catch(error => {
-                          console.error("Error loading WASM module:", error);
-                          dynamicContent.innerText = "错误：无法加载 WASM 模块。";
-                      });
-              });
-          }
-
-          async function loadWasmModule(modulePath) {
-              const response = await fetch(modulePath);
-              const buffer = await response.arrayBuffer();
-              const module = await WebAssembly.compile(buffer);
-              const instance = await WebAssembly.instantiate(module);
-              return instance;
-          }
-      });
-  </script>
 </body>
 </html>

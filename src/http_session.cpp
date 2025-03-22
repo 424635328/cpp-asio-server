@@ -2,12 +2,13 @@
 #include "http_request_handler.h"
 #include "http_request.h"
 #include "http_response.h"
-#include "asio_context.h" 
+#include "asio_context.h"
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
-#include <vector> 
+#include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -128,15 +129,14 @@ void HttpSession::do_read() {
         });
 }
 
-void HttpSession::do_write(const HttpResponse& response) {
+void HttpSession::do_write(std::shared_ptr<HttpResponse> response) {  
     auto self = shared_from_this();
 
-    // Prepare the headers as a string
     stringstream header_stream;
-    header_stream << response.version << " " << response.status_code << " OK\r\n";
+    header_stream << response->version << " " << response->status_code << " OK\r\n";
 
-    HttpResponse mutableResponse = response;
-    mutableResponse.headers["Content-Length"] = to_string(response.body.size());
+    HttpResponse mutableResponse = *response; 
+    mutableResponse.headers["Content-Length"] = to_string(response->body.size());
 
     for (const auto& header : mutableResponse.headers) {
         header_stream << header.first << ": " << header.second << "\r\n";
@@ -152,10 +152,11 @@ void HttpSession::do_write(const HttpResponse& response) {
     // Prepare the buffers for header and body
     vector<boost::asio::const_buffer> buffers;
     buffers.push_back(boost::asio::buffer(header_str));
-    buffers.push_back(boost::asio::buffer(response.body)); // Body as string
+    buffers.push_back(boost::asio::buffer(response->body)); 
 
     boost::asio::async_write(socket_, buffers,
-        [this, self](boost::system::error_code ec, size_t bytes_transferred) {
+        [this, self, response](boost::system::error_code ec, size_t bytes_transferred) {
+
             {
                 std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
                 cout << "HttpSession::do_write - async_write callback - Started" << endl;
@@ -198,7 +199,8 @@ void HttpSession::handle_request(const HttpRequest& request) {
         cout << "HttpSession::handle_request - Handling request." << endl;
     }
     try {
-        HttpResponse response = request_handler_.handle_request(request);
+        // Create a shared_ptr for the HttpResponse
+        std::shared_ptr<HttpResponse> response = std::make_shared<HttpResponse>(request_handler_.handle_request(request));
         do_write(response);
     } catch (std::exception& e) {
         {
