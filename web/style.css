@@ -138,3 +138,88 @@ footer {
   font-size: 0.85rem;
   border-top: 2px dashed #e91e63; /* 更粗的边框 */
 }
+
+/* 粒子样式 */
+.particle {
+  position: absolute;
+  background-color: #f48fb1; /* 使用主题色 */
+  border-radius: 50%;
+  opacity: 0.7;
+  /* animation: float 10s linear infinite;  */
+  animation: randomFloat 10s linear infinite; /* 使用新的动画 */
+}
+
+/* 随机浮动动画 */
+@keyframes randomFloat {
+  0% {
+      transform: translate(0, 0);
+  }
+  50% {
+      --direction-x: calc(2 * random() - 1); /* 随机方向 */
+      --direction-y: calc(2 * random() - 1); /* 随机方向 */
+  }
+  
+  100% {
+      transform: translate(calc(var(--direction-x) * 20px), calc(var(--direction-y) * 20px)); /* 随机方向 */
+  }
+}
+
+/* 添加线条 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-image: linear-gradient(to right, transparent, #f48fb1, transparent);
+  opacity: 0.5;
+  pointer-events: none; /* 忽略鼠标事件 */
+  z-index: -1; /* 放置在底层 */
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-image: linear-gradient(to left, transparent, #80deea, transparent);
+  opacity: 0.5;
+  pointer-events: none; /* 忽略鼠标事件 */
+  z-index: -1; /* 放置在底层 */
+}
+
+/* 添加几何图案 */
+.container::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  width: 60px;
+  height: 60px;
+  background-color: rgba(244, 143, 177, 0.3); /* 使用主题色 */
+  border-radius: 50%;
+  pointer-events: none; /* 忽略鼠标事件 */
+  z-index: -1; /* 放置在底层 */
+}
+
+.container::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  right: -30px;
+  width: 60px;
+  height: 60px;
+  background-color: rgba(128, 222, 234, 0.3); /* 使用主题色 */
+  border-radius: 50%;
+  pointer-events: none; /* 忽略鼠标事件 */
+  z-index: -1; /* 放置在底层 */
+}
+
+/* 鼠标悬停效果 */
+.container:hover {
+  transform: scale(1.02); /* 稍微放大 */
+  transition: transform 0.3s ease;
+}
