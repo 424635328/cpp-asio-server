@@ -129,6 +129,7 @@ brew install boost
     ```
 
 3.  打开你的 Web 浏览器，然后访问 `http://localhost:8088`。 你应该看到 "Hello, World!"。
+4.  我们可以检查服务器是否运行 ` netstat -ano | Select-String -Pattern "LISTEN"`。
 
 ## 配置
 
