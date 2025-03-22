@@ -314,3 +314,117 @@ input[type="file"]::file-selector-button:hover {
 #extensions li {
     margin-bottom: 0.5rem;
 }
+
+/* 灰度图像样式  */
+.grayscale-image {
+  transition: transform 0.3s ease;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  cursor: zoom-in;
+}
+
+
+/* 放大图像样式 */
+.zoomed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  cursor: zoom-out;
+  transform: scale(1.5);
+  transition: transform 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 动态内容区域 */
+#dynamicContent {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: #f06292; /*  一个醒目的颜色 */
+  min-height: 150px;  /* 确保有足够的空间显示加载内容或错误 */
+}
+
+/* 图片上传 Input */
+input[type="file"] {
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background-color: #37474f;
+    color: #fff;
+    border: 1px solid #607d8b;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+    background-color: #607d8b;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: #455a64;
+}
+
+/* 服务器信息 Section */
+#server-info ul {
+    list-style: disc;
+    padding-left: 2rem;
+}
+
+#server-info li {
+    margin-bottom: 0.5rem;
+}
+
+/* WASM 部分 */
+#wasm-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 1px dashed #f06292;
+  border-radius: 8px;
+}
+
+#wasm-section h2 {
+  color: #f06292;
+  margin-bottom: 1rem;
+}
+
+/* 扩展 Section */
+#extensions ul {
+    list-style: square;
+    padding-left: 2rem;
+}
+
+#extensions li {
+    margin-bottom: 0.5rem;
+}
+
+/* 禁用按钮样式 */
+.button:disabled {
+    background-color: #6c757d; /* 灰色背景 */
+    color: #fff; /* 白色文字 */
+    border-color: #6c757d;
+    cursor: not-allowed; /* 更改光标 */
+    box-shadow: none; /* 移除阴影 */
+    transform: none; /* 移除偏移 */
+}
+
+.button:disabled:hover {
+    background-color: #6c757d;
+    color: #fff;
+    border-color: #6c757d;
+    transform: none;
+    cursor: not-allowed;
+}

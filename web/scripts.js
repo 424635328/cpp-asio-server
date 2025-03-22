@@ -270,6 +270,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           // 点击时放大/缩小
           imageWrapper.addEventListener("click", () => {
+              console.log("Image wrapper clicked!"); // 确保事件被触发
               if (imageWrapper.classList.contains("zoomed")) {
                   imageWrapper.classList.remove("zoomed");
                   imageWrapper.style.cursor = "zoom-in";
