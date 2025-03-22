@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="服务 - 了解本网站提供的各种服务。">
+  <title>服务 - 我的 C++ HTTP 服务器网站</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>服务</h1>
+    <p>本网站提供以下服务：</p>
+
+    <section id="service-list">
+      <h2>服务列表</h2>
+      <ul>
+        <li><b>静态文件托管：</b> 提供高性能的静态文件托管服务。</li>
+        <li><b>WebAssembly 计算：</b> 支持在客户端运行 WebAssembly 模块，以实现高性能的计算。</li>
+        <li><b>API 接口（待开发）：</b> 计划提供 RESTful API 接口，以支持其他应用程序的交互。</li>
+      </ul>
+    </section>
+
+    <section id="wasm-example">
+      <h2>WebAssembly 示例</h2>
+      <p>您可以尝试运行以下 WebAssembly 示例：</p>
+      <button class="button" id="wasm-button">运行示例</button>
+      <p id="wasm-result">WASM 结果将显示在此处。</p>
+    </section>
+
+    <nav>
+      <ul>
+        <li><a href="/">首页</a></li>
+        <li><a href="./about.html">关于</a></li>
+        <li><a href="./services.html">服务</a></li>
+        <li><a href="./contact.html">联系我们</a></li>
+        <li><a href="#" class="button">了解更多</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <footer>
+    © 2025 我的 C++ HTTP 服务器网站
+  </footer>
+   <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const wasmButton = document.getElementById('wasm-button');
+          const dynamicContent = document.getElementById('wasm-result');
+
+          if (wasmButton && dynamicContent) {
+              wasmButton.addEventListener('click', function() {
+                  loadWasmModule('./module.wasm')
+                      .then(instance => {
+                          // Example: Calling a function named 'calculate' that takes two integers and returns an integer
+                          const result = instance.exports.calculate(20, 30); // Replace with your WASM function and arguments
+                          dynamicContent.innerText = "WASM 结果: " + result;
+                      })
+                      .catch(error => {
+                          console.error("Error loading WASM module:", error);
+                          dynamicContent.innerText = "错误：无法加载 WASM 模块。";
+                      });
+              });
+          }
+
+          async function loadWasmModule(modulePath) {
+              const response = await fetch(modulePath);
+              const buffer = await response.arrayBuffer();
+              const module = await WebAssembly.compile(buffer);
+              const instance = await WebAssembly.instantiate(module);
+              return instance;
+          }
+      });
+  </script>
+</body>
+</html>

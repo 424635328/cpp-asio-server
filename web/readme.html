@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>README.md 内容</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <section id="readme">
+      <h2>使用说明</h2>
+      <div id="readme-content"></div>
+    </section>
+  </div>
+
+  <footer>
+    © 2025 我的 C++ HTTP 服务器网站
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('/README.md')
+        .then(response => response.text())
+        .then(markdown => {
+          const html = marked.parse(markdown);
+          document.getElementById('readme-content').innerHTML = html;
+        })
+        .catch(error => console.error('Error fetching README.md:', error));
+    });
+  </script>
+</body>
+</html>
