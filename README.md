@@ -1,34 +1,34 @@
-# 服务器框架 (Boost.Asio)
+# Server Framework (Boost.Asio)
 
-一个基于 Boost.Asio 构建的轻量级、高性能的服务器框架，旨在易于扩展和定制。
+A lightweight, high-performance server framework built on Boost.Asio, designed for easy extension and customization.
 
-## 特性
+## Features
 
-*   **高性能：** 利用 Boost.Asio 的异步、非阻塞 I/O 操作，能够高效地处理并发连接。
-*   **模块化设计：** 可以轻松地使用自定义协议和请求处理程序进行扩展。
-*   **多线程：** 使用线程池来处理传入的连接和处理请求。
-*   **HTTP 服务器示例：** 包含一个基本的 HTTP 服务器实现，用于演示框架的功能。
-*   **跨平台：** 设计为跨平台，可在 Windows 和 Linux 上运行（需要适当的构建配置）。
+*   **High Performance:** Leverages Boost.Asio's asynchronous, non-blocking I/O operations for efficient handling of concurrent connections.
+*   **Modular Design:**  Easily extensible with custom protocols and request handlers.
+*   **Multi-threaded:** Uses a thread pool to handle incoming connections and process requests.
+*   **HTTP Server Example:** Includes a basic HTTP server implementation to demonstrate the framework's capabilities.
+*   **Cross-Platform:** Designed to be cross-platform and run on Windows and Linux (requires appropriate build configuration).
 
-## 快速入门
+## Quick Start
 
-### 前提条件
+### Prerequisites
 
-*   **Boost 库：** 异步 I/O 和多线程所必需。 使用你的系统的包管理器或 Vcpkg 安装 Boost（推荐用于 Windows）。 有关详细信息，请参阅[安装](#安装)部分。
-*   **CMake：** 构建项目所必需。 从 [https://cmake.org/](https://cmake.org/) 下载并安装 CMake。
-*   **MinGW（可选，用于 Windows）：** 如果在 Windows 上构建，建议使用 MinGW。
+*   **Boost Libraries:** Required for asynchronous I/O and multi-threading. Install Boost using your system's package manager or Vcpkg (recommended for Windows). See the [Installation](#installation) section for details.
+*   **CMake:** Required for building the project. Download and install CMake from [https://cmake.org/](https://cmake.org/).
+*   **MinGW (Optional, for Windows):** Recommended for building on Windows.
 
-### 安装
+### Installation
 
-#### 使用 Vcpkg（推荐用于 Windows）
+#### Using Vcpkg (Recommended for Windows)
 
-1.  克隆 Vcpkg 仓库：
+1.  Clone the Vcpkg repository:
 
     ```bash
     git clone https://github.com/microsoft/vcpkg.git
     ```
 
-2.  引导 Vcpkg：
+2.  Bootstrap Vcpkg:
 
     ```bash
     cd vcpkg
@@ -36,136 +36,134 @@
     ./bootstrap-vcpkg.sh    (Git Bash)
     ```
 
-3.  将 Vcpkg 与你的系统集成：
+3.  Integrate Vcpkg with your system:
 
     ```bash
     .\vcpkg integrate install
     ```
 
-4.  安装 Boost：
+4.  Install Boost:
 
     ```bash
-    vcpkg install boost:x64-windows   # 64 位构建
-    vcpkg install boost:x86-windows   # 32 位构建
+    vcpkg install boost:x64-windows   # 64-bit build
+    vcpkg install boost:x86-windows   # 32-bit build
     ```
 
-#### 使用 apt（Debian/Ubuntu Linux）
+#### Using apt (Debian/Ubuntu Linux)
 
 ```bash
 sudo apt update
 sudo apt install libboost-dev libboost-system-dev libboost-thread-dev
 ```
 
-#### 使用 brew (macOS)
+#### Using brew (macOS)
 
 ```bash
 brew install boost
 ```
 
-### 构建项目
+### Building the Project
 
-1.  克隆仓库：
+1.  Clone the repository:
 
     ```bash
     git clone https://github.com/424635328/cpp-asio-server
     cd cpp-asio-server
     ```
 
-2.  创建一个构建目录：
+2.  Create a build directory:
 
-    修改CMakeLists.txt：set(CMAKE_TOOLCHAIN_FILE "你的vcpkg.cmake路径"
-    CACHE STRING "Vcpkg 工具链文件" FORCE)
+    Modify CMakeLists.txt: set(CMAKE_TOOLCHAIN_FILE "your/path/to/vcpkg.cmake"
+    CACHE STRING "Vcpkg toolchain file" FORCE)
 
     ```bash
     mkdir build
     cd build
     ```
 
-3.  使用 CMake 生成构建文件：
+3.  Generate build files using CMake:
 
-    *   **使用 MinGW (Windows)：**
+    *   **Using MinGW (Windows):**
 
         ```bash
         cmake .. -G "MinGW Makefiles"
         ```
 
-    *   **使用 Visual Studio (Windows)：**
+    *   **Using Visual Studio (Windows):**
 
         ```bash
         cmake -B build -S . -A x64
         ```
 
-    *   **使用 Make (Linux/macOS)：**
+    *   **Using Make (Linux/macOS):**
 
         ```bash
         cmake ..
         ```
 
-4.  构建项目：
+4.  Build the project:
 
-    *   **使用 MinGW：**
+    *   **Using MinGW:**
 
         ```bash
         mingw32-make
         ```
 
-    *   **使用 Visual Studio：**
+    *   **Using Visual Studio:**
 
         ```bash
         cmake --build . --config Release
         ```
 
-    *   **使用 Make：**
+    *   **Using Make:**
 
         ```bash
         make
         ```
 
-### 运行服务器
+### Running the Server
 
-1.  导航到构建目录`build/release/`。
-2.  运行可执行文件：
+1.  Navigate to the build directory `build/release/`.
+2.  Run the executable:
 
     ```bash
     ./my_server_framework  # Linux/macOS
     ./my_server_framework.exe  # Windows
     ```
 
-3.  打开你的 Web 浏览器，然后访问 `http://127.0.0.1:8765`。 你应该看到 "Hello, World!"。
-4.  我们可以检查服务器是否运行 
+3.  Open your web browser and go to `http://127.0.0.1:8765`. You should see "Hello, World!".
+4.  We can check if the server is running
     ```bash
     curl http://127.0.0.1:8765 # Linux/macOS
     curl http://127.0.0.1:8765 -o /dev/null  # Windows
     ```
-    或者
+    Or
     ```bash
     netstat -ano | findstr :8765 # Windows
     netstat -tulnp | grep :8765 # Linux/macOS
     ```
 
-## 配置
+## Configuration
 
-可以通过修改 `main.cpp` 文件来配置服务器。 你可以更改监听端口：
+The server can be configured by modifying the `main.cpp` file. You can change the listening port:
 
 ```c++
-MyHttpServer server(io_context, 8088); // 监听 8088 端口
+MyHttpServer server(io_context, 8765);
 ```
 
-可以将打印信息全部改为英语减少执行cmake时的警告&报错
+## Contributing
 
-## 贡献
+Contributions are welcome! Please follow these guidelines:
 
-欢迎贡献！ 请遵循以下准则：
+1.  Fork the repository.
+2.  Create a new branch for your feature or bug fix.
+3.  Make your changes and commit them with clear and concise commit messages.
+4.  Submit a pull request.
 
-1.  Fork 仓库。
-2.  为你添加新功能或修复错误创建一个新分支。
-3.  进行更改并提交，提交信息清晰明了。
-4.  提交 pull request。
+## License
 
-## 许可证
+This project is licensed under the [MIT License](LICENSE).
 
-此项目已获得 [MIT 许可证](LICENSE) 的许可。
-
-## 联系方式
+## Contact
 
 MiracleHcat@gmail.com
