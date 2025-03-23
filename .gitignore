@@ -1,52 +1,39 @@
-# 编译文件 (C/C++ 等)
-*.o                  # 目标文件
-*.obj                # 目标文件 (Windows)
-*.exe                # 可执行文件 (Windows)
-*.out                # 可执行文件 (Linux, Unix)
-*.d                  # 依赖文件
-*.so                 # 共享对象 (Linux)
-*.dylib              # 动态库 (macOS)
-*.dll                # 动态库 (Windows)
-*.a                  # 静态库
+# 编译文件
+*.o
+*.obj
+*.exe
+*.out
+*.d
+*.so
+*.dylib
+*.dll
+*.a
 
-# Node.js 和 JavaScript 相关
-node_modules/               # Node.js 依赖包目录
-dist/                        # 生产环境构建输出目录 (Production build)
-build/                       # 通用构建输出目录 (Common build)
-out/                         # 另一种常见的构建输出目录
-coverage/                    # 代码覆盖率报告目录
-*.js.map                     # JavaScript Source Map 文件 (用于调试)
-*.min.js                     # 压缩后的 JavaScript 文件 (如果不需要跟踪源代码)
-bundle.js                    # Webpack/Rollup 打包输出文件 (如果文件名不同请修改)
-*.log                        # 日志文件
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
 
-# IDE 和操作系统生成的文件
-.idea/                      # IntelliJ IDEA 项目文件
-.vscode/                    # VS Code 项目文件
-*.swp                        # Vim 交换文件
-*.swo                        # Vim 交换文件
-.DS_Store                   # macOS Finder 元数据文件
-Thumbs.db                    # Windows 缩略图缓存文件
+# 构建目录
+node_modules/
+bower_components/
+build/
+out/
+dist/
 
-# 依赖目录 (如果位于项目根目录)
-third_party/
-deps/
-libs/
+# 日志文件
+*.log
 
-# CMake 构建文件
+# 依赖包
+/third_party/
+/deps/
+/libs/
+
+# CMake 文件
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
-
-# 临时文件和目录
-tmp/
-temp/
-*.tmp
-
-# 包管理器特定文件
-package-lock.json         # 已经跟踪，除非非常大才忽略
-yarn.lock                 # 已经跟踪，除非非常大才忽略
-
-# 隐藏文件
-.*.swp                   # 隐藏交换文件
