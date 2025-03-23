@@ -5,6 +5,8 @@ const { performance } = require('perf_hooks'); // 引入 perf_hooks 模块，用
 const crypto = require('crypto'); // 引入 crypto 模块，用于生成随机字符串
 const { parseArgs } = require('util'); // 引入 util 模块的 parseArgs 函数
 
+http.globalAgent.maxSockets = Infinity; // 移除连接数限制
+
 // 默认配置对象
 const DEFAULT_CONFIG = {
     targetUrl: 'http://example.com/', // 目标 URL
