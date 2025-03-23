@@ -10,11 +10,11 @@ http.globalAgent.maxSockets = Infinity; // 移除连接数限制
 // 默认配置对象
 const DEFAULT_CONFIG = {
     targetUrl: 'http://example.com/', // 目标 URL
-    concurrency: os.cpus().length, // 并发数，默认为 CPU 核心数
+    concurrency: os.cpus().length * 1, // 并发数，默认为 CPU 核心数
     requestTimeout: 3000, // 请求超时时间，单位毫秒
     usePost: false, // 是否使用 POST 请求
     requestBodySize: 512, // POST 请求体大小，单位字节
-    maxRequests: 10000, // 最大请求数
+    maxRequests: 1000, // 最大请求数
     showResponseData: false, // 是否显示响应数据
     successStatusCodes: [200], // 成功状态码
     failedRequestThreshold: 0.8, // 失败请求阈值
