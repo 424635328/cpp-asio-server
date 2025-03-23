@@ -18,6 +18,7 @@
 Thumbs.db
 
 # 构建目录
+node_modules/
 build/
 out/
 dist/
