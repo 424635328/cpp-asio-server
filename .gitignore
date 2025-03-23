@@ -9,17 +9,19 @@
 *.dll
 *.a
 
-# IDE
+# IDE 和操作系统生成的文件
 .idea/
 .vscode/
 *.swp
 *.swo
-*.DS_Store
+.DS_Store
 Thumbs.db
 
-# 构建目录
+# 依赖管理工具
 node_modules/
 bower_components/
+
+# 构建产物
 build/
 out/
 dist/
@@ -27,13 +29,40 @@ dist/
 # 日志文件
 *.log
 
-# 依赖包
+# 依赖目录 (如果位于项目根目录)
 /third_party/
 /deps/
 /libs/
 
-# CMake 文件
+# CMake 相关
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
+
+# 包管理器锁文件 (通常应该跟踪)
+# package-lock.json
+# yarn.lock
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+
+# Visual Studio Code 特定文件
+.history/
+
+# 编辑器备份文件
+*~
+
+# JavaScript 构建产物和临时文件
+*.js.map
+*.min.js
+*.bundle.js
+*.transpile.js
+/coverage/
+/temp/js/
+/tmp/js/
+*-lock.yaml  # npm v7+ package lock file
+package-lock.json
+/packagelock.json/
