@@ -11,7 +11,7 @@
 
 # IDE 和操作系统生成的文件
 .idea/
-.vscode/
+.vscode/ 
 *.swp
 *.swo
 .DS_Store
@@ -22,7 +22,7 @@ node_modules/
 bower_components/
 
 # 构建产物
-build/
+build/  
 out/
 dist/
 
@@ -41,8 +41,8 @@ cmake_install.cmake
 Makefile
 
 # 包管理器锁文件 (通常应该跟踪)
-# package-lock.json
-# yarn.lock
+package-lock.json
+yarn.lock
 
 # 临时文件
 tmp/
@@ -64,5 +64,4 @@ temp/
 /temp/js/
 /tmp/js/
 *-lock.yaml  # npm v7+ package lock file
-package-lock.json
 /packagelock.json/
