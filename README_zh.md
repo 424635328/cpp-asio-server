@@ -32,14 +32,14 @@
 
     ```bash
     cd vcpkg
-    .\bootstrap-vcpkg.bat   (PowerShell)
+    ./bootstrap-vcpkg.bat   (PowerShell)
     ./bootstrap-vcpkg.sh    (Git Bash)
     ```
 
 3.  将 Vcpkg 与你的系统集成：
 
     ```bash
-    .\vcpkg integrate install
+    ./vcpkg integrate install
     ```
 
 4.  安装 Boost：
