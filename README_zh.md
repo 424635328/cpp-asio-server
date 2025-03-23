@@ -351,11 +351,11 @@ AsioContext io_context(num_threads);
 
 *   **Q: 如何添加对自定义协议的支持？**
 
-    *   A: 实现 `ProtocolHandler` 接口，并在 `Connection` 类中注册它。 有关详细信息，请参阅 [扩展协议支持](#extending-protocol-support) 部分。
+    *   A: 实现 `ProtocolHandler` 接口，并在 `Connection` 类中注册它。 有关详细信息，请参阅 [扩展协议支持](#扩展协议支持) 部分。
 
 *   **Q: 如何执行性能测试？**
 
-    *   A: 使用诸如 `ab` (Apache Benchmark) 或 `wrk` 之类的工具来对服务器进行基准测试。 请参阅 [性能测试和基准测试](#performance-testing-and-benchmarking) 部分。
+    *   A: 使用诸如 `ab` (Apache Benchmark) 或 `wrk` 之类的工具来对服务器进行基准测试。 请参阅 [性能测试和基准测试](#性能测试和基准测试) 部分。
 
 *   **Q: 如何使用 Visual Studio 在 Windows 上构建项目？**
 
