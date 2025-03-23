@@ -11,7 +11,6 @@
 
 using namespace std;
 
-// Helper function to URL decode a string
 std::string HttpRequestHandler::url_decode(const std::string &str)
  {
     std::string result;
@@ -48,7 +47,6 @@ std::unordered_map<std::string, std::string> HttpRequestHandler::parse_post_data
     return data;
 }
 
-// Serve static files
 HttpResponse HttpRequestHandler::handle_static_file_request(const HttpRequest& request) {
     HttpResponse response;
     response.status_code = 200;

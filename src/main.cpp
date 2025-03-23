@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
         desc.add_options()
             ("help", "produce help message") // 帮助信息
             ("port", po::value<short>()->default_value(8765), "set listening port") // 设置监听端口
-            ("max_connections", po::value<size_t>()->default_value(1000), "set max connections"); // 设置最大连接数
+            ("max_connections", po::value<size_t>()->default_value(10000), "set max connections"); // 设置最大连接数
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm); // 解析命令行参数
