@@ -123,12 +123,12 @@ brew install boost
 
 ### 运行服务器
 
-1.  导航到构建目录。
+1.  导航到构建目录`build/release/`。
 2.  运行可执行文件：
 
     ```bash
     ./my_server_framework  # Linux/macOS
-    .\my_server_framework.exe  # Windows
+    ./my_server_framework.exe  # Windows
     ```
 
 3.  打开你的 Web 浏览器，然后访问 `http://127.0.0.1:8765`。 你应该看到 "Hello, World!"。
