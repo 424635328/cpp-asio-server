@@ -1,4 +1,3 @@
-// http_request_handler.cpp - 实现 HTTP 请求处理类
 #include "asio_context.h"
 #include "http_request_handler.h"
 #include "http_request.h"
@@ -13,7 +12,8 @@
 using namespace std;
 
 // Helper function to URL decode a string
-std::string url_decode(const std::string& str) {
+std::string HttpRequestHandler::url_decode(const std::string &str)
+ {
     std::string result;
     for (size_t i = 0; i < str.length(); ++i) {
         if (str[i] == '%' && i + 2 < str.length()) {
@@ -32,7 +32,7 @@ std::string url_decode(const std::string& str) {
     return result;
 }
 
-std::unordered_map<std::string, std::string> parse_post_data(const std::string& body) {
+std::unordered_map<std::string, std::string> HttpRequestHandler::parse_post_data(const std::string& body) {  // 添加 HttpRequestHandler::
     std::unordered_map<std::string, std::string> data;
     std::stringstream ss(body);
     std::string pair, key, value;
@@ -99,8 +99,37 @@ HttpResponse HttpRequestHandler::handle_static_file_request(const HttpRequest& r
     return response;
 }
 
+
+
+// 行为分析（简化示例）
+HttpResponse HttpRequestHandler::analyze_behavior(const HttpRequest& request) {
+    HttpResponse response;
+
+    // 检查 User-Agent 是否为空或异常
+    if (request.headers.find("User-Agent") == request.headers.end() || request.headers.at("User-Agent").empty()) {
+        std::cerr << "Suspicious request: Missing User Agent header." << std::endl;
+        response.status_code = 403; // Forbidden
+        response.body = "<h1>403 Forbidden - Missing User-Agent</h1>";
+        response.headers["Content-Type"] = "text/html; charset=utf-8";
+        return response;
+    }
+
+    // TODO: 更复杂的行为分析，例如：
+    // 1. 检查请求频率
+    // 2. 检查请求的 URI 模式
+    // 3. 检查是否存在已知的恶意 User-Agent
+
+    return response; // 默认情况下，返回空响应，表示未检测到异常行为
+}
+
 HttpResponse HttpRequestHandler::handle_request(const HttpRequest& request) {
     cout << "收到请求: " << request.method << " " << request.uri << endl;
+    // 应用层防御：行为分析
+    HttpResponse behavior_response = analyze_behavior(request);
+    if (behavior_response.status_code != 0) {
+        return behavior_response; // 如果行为分析检测到异常，则返回错误响应
+    }
+
     if (request.uri == "/contact" && request.method == "POST") {
         auto post_data = parse_post_data(request.body);
 
@@ -111,9 +140,9 @@ HttpResponse HttpRequestHandler::handle_request(const HttpRequest& request) {
         if (name.empty() || email.empty() || message.empty()) {
             std::cerr << "Error: Contact form submission with missing fields." << std::endl;
             HttpResponse response;
-            response.status_code = 400; 
+            response.status_code = 400;
             response.headers["Content-Type"] = "text/html; charset=utf-8";
-            response.body = "<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><title>错误</title></head><body><h1>错误</h1><p>请填写所有字段！</p><a href='/web/contact.html'>返回</a><script src=\"/web/beautify.js\"></script></body></html>";
+            response.body = R"(<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><title>错误</title></head><body><h1>错误</h1><p>请填写所有字段！</p><a href='/web/contact.html'>返回</a><script src="/web/beautify.js"></script></body></html>)";
 
             return response;
         }
@@ -126,8 +155,8 @@ HttpResponse HttpRequestHandler::handle_request(const HttpRequest& request) {
         HttpResponse response;
         response.status_code = 200;
         response.version = "HTTP/1.1";
-        response.headers["Content-Type"] = "text/html; charset=utf-8";  
-        response.body = "<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><title>错误</title></head><body><h1>错误</h1><p>请填写所有字段！</p><a href='/web/contact.html'>返回</a><script src=\"/web/beautify.js\"></script></body></html>";
+        response.headers["Content-Type"] = "text/html; charset=utf-8";
+        response.body = R"(<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><title>错误</title></head><body><h1>错误</h1><p>请填写所有字段！</p><a href='/web/contact.html'>返回</a><script src="/web/beautify.js"></script></body></html>)";
         return response;
 
     } else {

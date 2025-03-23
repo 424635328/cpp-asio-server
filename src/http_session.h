@@ -4,14 +4,14 @@
 
 #include <boost/asio.hpp>
 #include <memory>
-#include <mutex>
-#include "http_request_handler.h" // Forward declaration
 #include "http_request.h"
 #include "http_response.h"
+#include <functional> 
+class HttpRequestHandler;
 
-class HttpSession : public std::enable_shared_from_this<HttpSession> { // 继承 enable_shared_from_this
+class HttpSession : public std::enable_shared_from_this<HttpSession> {
 public:
-    HttpSession(boost::asio::ip::tcp::socket socket, HttpRequestHandler& request_handler);
+    HttpSession(boost::asio::ip::tcp::socket socket, HttpRequestHandler& request_handler, std::function<void()> connection_finished_callback);
     ~HttpSession();
 
     void start();
@@ -23,9 +23,10 @@ private:
     void handle_request(const HttpRequest& request);
 
     boost::asio::ip::tcp::socket socket_;
-    boost::asio::streambuf buffer_;
     HttpRequestHandler& request_handler_;
+    boost::asio::streambuf buffer_;
     bool stopped_ = false;
+    std::function<void()> connection_finished_callback_;
 };
 
 #endif

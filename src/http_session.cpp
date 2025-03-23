@@ -1,4 +1,3 @@
-
 // http_session.cpp
 #include "http_session.h"
 #include "http_request_handler.h"
@@ -14,8 +13,8 @@
 
 using namespace std;
 
-HttpSession::HttpSession(boost::asio::ip::tcp::socket socket, HttpRequestHandler& request_handler)
-    : socket_(std::move(socket)), request_handler_(request_handler)
+HttpSession::HttpSession(boost::asio::ip::tcp::socket socket, HttpRequestHandler& request_handler, std::function<void()> connection_finished_callback)
+    : socket_(std::move(socket)), request_handler_(request_handler), connection_finished_callback_(connection_finished_callback)
 {
     { // 限定 lock_guard 的作用域
         std::lock_guard<std::mutex> lock(AsioContext::cout_mutex); // 获取互斥锁，保证线程安全
@@ -27,6 +26,9 @@ HttpSession::~HttpSession() {
     {
         std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
         cout << "HTTP Session destroyed." << endl;
+    }
+    if(connection_finished_callback_) {
+        connection_finished_callback_(); // 在析构函数中调用回调
     }
 }
 
@@ -45,27 +47,31 @@ void HttpSession::start() {
 }
 
 void HttpSession::stop() {
-  if (!stopped_) {
+    if (!stopped_) {
         stopped_ = true;
         boost::system::error_code ec;
         socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec); // 关闭发送和接收通道
         if (ec && ec != boost::system::errc::not_connected) {
             {
-              std::lock_guard<std::mutex> lock(AsioContext::cout_mutex); // 获取互斥锁，保证线程安全
-              cerr << "Error shutting down socket: " << ec.message() << endl;
+                std::lock_guard<std::mutex> lock(AsioContext::cout_mutex); // 获取互斥锁，保证线程安全
+                cerr << "Error shutting down socket: " << ec.message() << endl;
             }
         }
         socket_.close(ec); // 关闭socket
 
         if (ec) {
-           {
-             std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
-             cerr << "Error closing socket: " << ec.message() << endl;
-           }
+            {
+                std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+                cerr << "Error closing socket: " << ec.message() << endl;
+            }
         }
         {
-           std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
-           cout << "HTTP Session stopped." << endl;
+            std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+            cout << "HTTP Session stopped." << endl;
+        }
+
+        if (connection_finished_callback_) {
+            connection_finished_callback_(); // 调用回调，保证连接计数正确
         }
     }
 }
@@ -80,7 +86,7 @@ void HttpSession::do_read() {
 
     boost::asio::async_read_until(socket_, buffer_, "\r\n\r\n", // 异步读取直到遇到 \r\n\r\n
         [this, self](boost::system::error_code ec, std::size_t bytes_transferred) {
-           if(stopped_) return; // Check if session is already stopped
+            if (stopped_) return;//检查会话是否已停止
 
             try {
                 if (!ec) {
@@ -93,8 +99,8 @@ void HttpSession::do_read() {
                         return;
                     }
                     {
-                         std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
-                         cout << "HttpSession::do_read - async_read_until callback - Received " << bytes_transferred << " bytes." << endl;
+                        std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+                        cout << "HttpSession::do_read - async_read_until callback - Received " << bytes_transferred << " bytes." << endl;
                     }
 
                     istream request_stream(&buffer_); // 使用buffer_初始化输入流
@@ -104,22 +110,21 @@ void HttpSession::do_read() {
                     handle_request(request); // 处理请求
 
                 } else if (ec == boost::asio::error::eof || ec == boost::asio::error::connection_reset || ec == boost::asio::error::connection_aborted) {
-                   // Connection closed by client
-                   {
-                     std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
-                     cout << "HttpSession::do_read - async_read_until callback - Connection closed by client." << endl;
-                   }
-                    stop(); // Properly handle client disconnection
-                }
-                else {
-                     {
-                         std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
-                         cerr << "HttpSession::do_read - async_read_until callback - Error reading: " << ec.message() << endl;
-                     }
+                    // 连接被客户端关闭
+                    {
+                        std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+                        cout << "HttpSession::do_read - async_read_until callback - Connection closed by client." << endl;
+                    }
+                    stop(); // 停止会话
+                } else {
+                    {
+                        std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+                        cerr << "HttpSession::do_read - async_read_until callback - Error reading: " << ec.message() << endl;
+                    }
                     stop();
                 }
             } catch (std::exception& e) {
-                 {
+                {
                     std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
                     cerr << "HttpSession::do_read - async_read_until callback - Exception: " << e.what() << endl;
                 }
@@ -127,7 +132,7 @@ void HttpSession::do_read() {
             }
             {
                 std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
-                 cout << "HttpSession::do_read - async_read_until callback - Finished" << endl;
+                cout << "HttpSession::do_read - async_read_until callback - Finished" << endl;
             }
         });
 }
@@ -157,7 +162,7 @@ void HttpSession::do_write(std::shared_ptr<HttpResponse> response) {
 
     boost::asio::async_write(socket_, buffers, // 异步写入
         [this, self, response](boost::system::error_code ec, size_t bytes_transferred) { // 异步写入回调函数
-           if(stopped_) return; // Check if session is already stopped
+            if (stopped_) return; 
             try {
                 if (!ec) {
                     {
@@ -166,17 +171,17 @@ void HttpSession::do_write(std::shared_ptr<HttpResponse> response) {
                     }
                     do_read(); //  如果是持久连接，则读取下一个请求
                 } else {
-                     {
-                         std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
-                         cerr << "HttpSession::do_write - async_write callback - Error writing: " << ec.message() << endl;
-                     }
+                    {
+                        std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+                        cerr << "HttpSession::do_write - async_write callback - Error writing: " << ec.message() << endl;
+                    }
                     stop();
                 }
             } catch (const std::exception& e) {
-                 {
+                {
                     std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
                     cerr << "HttpSession::do_write - async_write callback - Exception: " << e.what() << endl;
-                 }
+                }
                 stop();
             }
             {

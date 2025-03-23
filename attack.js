@@ -5,7 +5,7 @@ const URL = require('url').URL;
 // 设置 HTTP Agent 的最大 Socket 连接数 (激进值)
 http.globalAgent.maxSockets = Infinity; // 移除连接数限制
 
-const TARGET_URL = 'https://www.defense.gov/'; // 目标网址
+const TARGET_URL = 'http://127.0.0.1:8765/'; // 目标网址
 const CONCURRENCY = 1000; // 激进的并发数
 const REQUEST_TIMEOUT = 2000; // 缩短超时时间
 const USE_POST = false; // 是否使用 POST 请求
