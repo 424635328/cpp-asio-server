@@ -1,4 +1,4 @@
-# Server Framework (Boost.Asio)
+# Server Framework (Boost.Asio)     [English](README.md) | [中文 (Chinese)](README_zh.md)
 
 A lightweight, high-performance server framework built on Boost.Asio, designed for easy extension and customization.
 
