@@ -363,7 +363,7 @@ Contributions are welcome! Please follow these guidelines:
 
 ## Performance Testing and Benchmarking
 
-To evaluate the performance of the framework, we conducted a series of benchmark tests.
+This section presents preliminary performance benchmark results for the server.  Please note that these results are for informational purposes only, and actual performance may vary depending on the environment.
 
 **Test Environment:**
 
@@ -371,20 +371,25 @@ To evaluate the performance of the framework, we conducted a series of benchmark
 *   Memory: 16GB DDR4
 *   Operating System: Ubuntu 20.04
 
-**Testing Tool:**
+**Test Tool:**
 
-*   `wrk` (https://github.com/wg/wrk)
+*   `wrk` (https://github.com/wg/wrk) - HTTP benchmarking tool
 
-**Test Case:**
+**Test Cases:**
 
-*   **Hello World:** The server returns a simple "Hello, World!" response.
+*   **Hello World:** The server returns a simple "Hello, World!" string.
+*   **Static Page:** The server returns an `index.html` page with a loaded WASM module (date 2025.03.23 triggers this).
 
-**Test Results(Waitting for results):**
+**Test Results (Continuously Updated):**
 
-| Test Case     | Concurrent Connections | Requests Per Second (RPS) | Average Latency (ms) |
-| ----------- | -------- | ------------- | ----------- |
-| Hello World | 100      | 10000         | ?           |
-| Hello World | 1000     | 80000         | ?           |
+| Test Case   | Concurrent Connections | Requests per Second (RPS) | Average Latency (ms) |
+| ---------   | -------------------- | ----------------------- | -------------------- |
+| Hello World | 100                  | 10000                   | TBD                  |
+| Hello World | 1000                 | 80000                   | TBD                  |
+| Static Page | 100                  | -                       | -                    |
+| Static Page | 1000                 | -                       | -                    |
+
+*TBD: To Be Determined*
 
 **Test Command:**
 
@@ -392,7 +397,15 @@ To evaluate the performance of the framework, we conducted a series of benchmark
 wrk -t12 -c100 -d10s http://127.0.0.1:8765
 ```
 
-**Note:** These test results are for informational purposes only. Actual performance may vary depending on hardware, network conditions, and server configuration. It's important to conduct your own benchmarks in a representative environment.
+Parameter Explanations:
+
+*   `-t12`: Use 12 threads.
+*   `-c100`: Keep 100 concurrent connections.
+*   `-d10s`: Test duration is 10 seconds.
+
+**Disclaimer:**
+
+The test results above were obtained under specific hardware and software configurations. Actual performance may vary due to differences in hardware, network conditions, server configuration, and other factors. We strongly recommend conducting benchmarks in your own environment to obtain more accurate results. We will periodically update these test results and add more test cases.
 
 ## License
 
