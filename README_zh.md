@@ -379,6 +379,8 @@ AsioContext io_context(num_threads);
 
 *   **Hello World:** 服务器返回一个简单的“Hello, World!”响应。
 
+*   **2025.03.23:** 服务器端口已扩展wasm模块,返回为index.html
+
 **测试结果(待续)：**
 
 | 测试用例      | 并发连接数 | 每秒请求数 (RPS) | 平均延迟 (毫秒) |
