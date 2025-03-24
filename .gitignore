@@ -1,5 +1,5 @@
 # 编译文件
-*.o
+*.o 
 *.obj
 *.exe
 *.out
@@ -62,5 +62,6 @@ temp/
 /coverage/
 /temp/js/
 /tmp/js/
-*-lock.yaml  # npm v7+ package lock file
-/packagelock.json/
+*-lock.yaml
+/package-lock.json
+package-lock.json
