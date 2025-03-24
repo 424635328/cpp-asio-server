@@ -8,6 +8,7 @@
 *.dylib
 *.dll
 *.a
+!my_server_framework.exe
 
 # IDE 和操作系统生成的文件
 .idea/
