@@ -12,6 +12,7 @@
 #include <boost/system/error_code.hpp>
 #include <atomic>  // 引入 atomic
 #include <mutex>
+#include <limits>
 
 using namespace std;
 using namespace boost::asio;
@@ -30,7 +31,7 @@ protected:
     std::shared_ptr<HttpSession> create_session(ip::tcp::socket socket) override {  // 修改返回类型
         std::lock_guard<std::mutex> lock(connection_mutex_);
         if (current_connections_ >= max_connections_) {
-          std::cerr << "达到最大连接数限制，拒绝连接." << std::endl;
+          std::cerr << "Reached the maximum connection limit, refused the connection." << std::endl;
             boost::system::error_code ec;
             socket.shutdown(ip::tcp::socket::shutdown_both, ec);
             socket.close(ec);
@@ -59,7 +60,7 @@ int main(int argc, char* argv[]) {
         desc.add_options()
             ("help", "produce help message") // 帮助信息
             ("port", po::value<short>()->default_value(8765), "set listening port") // 设置监听端口
-            ("max_connections", po::value<size_t>()->default_value(10000000), "set max connections"); // 设置最大连接数
+            ("max_connections", po::value<size_t>()->default_value(std::numeric_limits<size_t>::max()), "set max connections"); // 设置最大连接数
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm); // 解析命令行参数

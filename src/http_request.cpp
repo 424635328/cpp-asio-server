@@ -13,7 +13,7 @@ istream& operator>>(istream& is, HttpRequest& request) {
     istringstream request_line(line);
     request_line >> request.method >> request.uri >> request.version;
 
-    cout << "HttpRequest::operator>> - 请求行: " << line << endl;
+    cout << "HttpRequest::operator>> - request_line: " << line << endl;
     cout << "HttpRequest::operator>> - 方法: " << request.method << ", URI: " << request.uri << ", 版本: " << request.version << endl;
 
     // 读取头部
@@ -31,6 +31,6 @@ istream& operator>>(istream& is, HttpRequest& request) {
     stringstream body_stream;
     body_stream << is.rdbuf();
     request.body = body_stream.str();
-    cout << "HttpRequest::operator>> - 请求体: " << request.body << endl;
+    cout << "HttpRequest::operator>> - request_body: " << request.body << endl;
     return is;
 }
