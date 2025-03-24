@@ -379,12 +379,12 @@ To evaluate the performance of the framework, we conducted a series of benchmark
 
 *   **Hello World:** The server returns a simple "Hello, World!" response.
 
-**Test Results:**
+**Test Results(Waitting for results):**
 
 | Test Case     | Concurrent Connections | Requests Per Second (RPS) | Average Latency (ms) |
 | ----------- | -------- | ------------- | ----------- |
-| Hello World | 100      | 10000         | 1           |
-| Hello World | 1000     | 80000         | 12.5        |
+| Hello World | 100      | 10000         | ?           |
+| Hello World | 1000     | 80000         | ?           |
 
 **Test Command:**
 
