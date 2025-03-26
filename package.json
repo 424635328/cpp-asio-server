@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "async": "^3.2.6",
+    "winston": "^3.17.0"
+  }
+}
