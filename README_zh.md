@@ -109,7 +109,7 @@ brew install boost
     *   **使用 Visual Studio (Windows):**
 
         ```bash
-        cmake -B build -S . -A x64 -DCMAKE_BUILD_TYPE=Release  # 明确指定架构和构建类型
+        cmake -B build -S . -A x64 -DCMAKE_BUILD_TYPE=Release  # 明确指定架构和构建类型(在项目根目录下运行)
         ```
 
     *   **使用 Make (Linux/macOS):**
@@ -129,7 +129,7 @@ brew install boost
     *   **使用 Visual Studio:**
 
         ```bash
-        cmake --build . --config Release
+        cmake --build build --config Release   # 在项目根目录下运行
         ```
 
     *   **使用 Make:**
