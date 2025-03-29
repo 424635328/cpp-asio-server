@@ -449,7 +449,7 @@ boost::asio::async_read(socket_, buffer_, boost::asio::transfer_at_least(1),
     *   提交消息应概括提交中所做的更改。
     *   如果您的更改修复了一个错误，请在提交消息中包含错误编号。
     *   如果您的更改添加了一个新功能，请提供一个简短的代码示例，演示该功能的用法。
-    *   遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-cn/v1.0.0/) 规范，以使提交历史更加清晰和一致。
+    *   遵循 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 规范，以使提交历史更加清晰和一致。
 
     ```bash
     git commit -m "feat: 添加我的新功能：实现了 X、Y 和 Z"
