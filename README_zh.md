@@ -467,40 +467,6 @@ boost::asio::async_read(socket_, buffer_, boost::asio::transfer_at_least(1),
 8.  测试：您的代码将被自动测试，以确保它不会破坏现有功能。
 9.  合并：一旦您的代码通过代码审查和测试，它将被合并到主分支中。
 
-## 常见问题解答 (FAQ)
-
-*   **Q: 如何处理大量并发连接？**
-
-    *   A: 该框架使用 Boost.Asio 的异步 I/O 和线程池来有效管理高并发。 为了提高容量，您可以调整线程池大小和允许的最大连接数。 关键是在您的请求处理程序中避免阻塞操作。 避免在请求处理程序中执行耗时操作，例如，数据库查询或文件 I/O。 您可以将这些操作放入单独的线程中，或者使用异步 API 来执行它们。
-
-*   **Q: 如何添加对自定义协议的支持？**
-
-    *   A: 由于当前架构中没有单独的 `Connection` 类，您需要修改 `HttpSession` 类来实现对自定义协议的支持。 具体来说，您需要在 `HttpSession::start()` 中添加协议识别逻辑，并修改 `do_read()` 和 `do_write()` 方法以使用相应的 `ProtocolHandler`。 有关详细信息，请参阅 [扩展协议支持](#扩展协议支持) 部分。
-
-*   **Q: 如何执行性能测试？**
-
-    *   A: 使用诸如 `ab` (Apache Benchmark) 或 `wrk` 之类的工具来对服务器进行基准测试。 请参阅 [性能测试和基准测试](#性能测试和基准测试) 部分。
-
-*   **Q: 如何使用 Visual Studio 在 Windows 上构建项目？**
-
-    *   A: 确保您已安装 Visual Studio，并在 CMake 配置期间指定了 Visual Studio 生成器 (例如，`cmake -B build -S . -A x64 -DCMAKE_BUILD_TYPE=Release`)。 生成构建文件后，您可以在 Visual Studio 中打开生成的解决方案文件 (`.sln`) 并构建项目。
-
-*   **Q: 如何支持 HTTPS？**
-
-    *   A: 要支持 HTTPS，您需要使用 `boost::asio::ssl::context` 类来创建一个 SSL 上下文，并将该上下文传递给 `boost::asio::ssl::stream` 对象。 您还需要配置服务器以使用 TLS/SSL 证书。 以下是一些步骤：
-        1.  **生成 TLS/SSL 证书：** 您可以使用 OpenSSL 或其他工具生成 TLS/SSL 证书。
-        2.  **创建 SSL 上下文：** 使用 `boost::asio::ssl::context` 类创建一个 SSL 上下文，并配置该上下文以使用您的证书。
-        3.  **创建 SSL 流：** 使用 `boost::asio::ssl::stream` 类创建一个 SSL 流，并将该流与您的套接字和 SSL 上下文关联。
-        4.  **执行握手：** 使用 `boost::asio::ssl::stream::async_handshake` 方法执行握手。
-        5.  **读取和写入数据：** 使用 `boost::asio::async_read` 和 `boost::asio::async_write` 方法读取和写入数据。
-
-*   **Q: 如何防止 CSRF 攻击？**
-
-    *   A: 要防止 CSRF 攻击，您可以使用以下方法：
-        1.  **使用 CSRF 令牌：** 在您的表单中包含一个 CSRF 令牌，并在服务器端验证该令牌。
-        2.  **验证 Referer 头部：** 验证 Referer 头部以确保请求来自您的网站。
-        3.  **使用 SameSite Cookie 属性：** 使用 SameSite Cookie 属性来限制 Cookie 的跨站点访问。
-
 ## 性能测试和基准测试
 
 为了评估框架的性能，我们进行了一系列基准测试。
