@@ -1,53 +1,54 @@
-[English](README.md) | [中文 (Chinese)](README_zh.md) | [中文简化版](README_lite.md)
+# 服务器框架 (Boost.Asio)
 
-# Server Framework (Boost.Asio)
+[Chinese](README.md) | [English](README_en.md) | [中文简化版](README_lite.md)
 
-A lightweight, high-performance server framework built on Boost.Asio, designed to offer easy extensibility and customization.
+一个基于 Boost.Asio 构建的轻量级、高性能服务器框架，旨在提供易于扩展和定制的能力。
 
-## Features
+## 特性
 
-*   **High Performance:** Leverages Boost.Asio's asynchronous, non-blocking I/O operations for efficient handling of concurrent connections.
-*   **Modular Design:** Easily extendable with custom protocols and request handlers.
-*   **Multi-threading:** Uses a thread pool to manage incoming connections and request processing, maximizing throughput.
-*   **HTTP Server Example:** Includes a basic HTTP server implementation demonstrating the framework's capabilities out-of-the-box.
-*   **Cross-Platform:** Designed for cross-platform compatibility, supporting Windows and Linux (requires appropriate build configurations).
-*   **Configurable Thread Pool:** Adjust the thread pool size based on hardware resources and anticipated workload.
-*   **Error Handling and Logging:** Provides consistent error handling and logging mechanisms throughout the framework.
+*   **高性能:** 利用 Boost.Asio 的异步非阻塞 I/O 操作，高效处理并发连接。 异步 I/O 允许服务器在等待 I/O 操作完成时处理其他任务，从而提高了吞吐量和响应速度。
+*   **模块化设计:** 可轻松使用自定义协议和请求处理程序进行扩展。 通过实现 `ProtocolHandler` 和 `RequestHandler` 接口，您可以轻松添加对新协议和请求类型的支持。
+*   **多线程:** 使用线程池管理传入连接和请求处理，最大限度地提高吞吐量。 线程池减少了创建和销毁线程的开销，从而提高了性能。
+*   **HTTP 服务器示例:** 包含一个基本的 HTTP 服务器实现，开箱即用地演示框架的功能。 HTTP 服务器示例演示了如何处理 HTTP 请求、提供静态文件和处理表单提交。
+*   **跨平台:** 设计为跨平台兼容，支持 Windows 和 Linux (需要适当的构建配置)。 该框架可以使用 CMake 构建，CMake 是一个跨平台构建系统。
+*   **可配置的线程池:** 可以根据硬件资源和预期工作负载调整线程池大小。 线程池的大小应该根据 CPU 核心数和预期的并发连接数进行调整。
+*   **错误处理和日志记录:** 在整个框架中提供一致的错误处理和日志记录机制。 框架使用 Boost.Asio 的 `boost::system::error_code` 进行错误处理，并使用 `std::cout` 和 `std::cerr` 进行日志记录。
+*   **拓展：** 提供 wasm 模块进行拓展功能 (例如: [gray_scale.cpp](gray_scale.cpp))，提升性能。 WASM 模块允许您使用其他编程语言（如 C++）编写高性能代码，并在 Web 浏览器中运行它。
 
-## Architectural Overview
+## 架构概览
 
-The core components of the framework include:
+框架的核心组件包括：
 
-*   **Server:** Listens on a specified port, accepts new connections, and dispatches them to worker threads.
-*   **Connection:** Represents a client connection, responsible for reading data, writing data, and handling protocol-specific details.
-*   **IOContext:** The heart of Boost.Asio, managing asynchronous I/O operations.  Think of it as the engine that drives all the asynchronous tasks.
-*   **ThreadPool:** A pool of threads used to execute the connection's processing logic, improving concurrency and responsiveness.  Threads are reused for different connections, reducing overhead.
-*   **RequestHandler:** An abstract class (interface) that defines how client requests are processed. You implement concrete `RequestHandler` classes to handle specific request types or business logic.
-*   **ProtocolHandler:** Handles the specifics of a particular protocol (e.g., HTTP). Responsible for parsing incoming data according to the protocol's rules and formatting outgoing data.
+*   **Server (服务器):** 监听指定的端口，接受新的连接，并将它们分派给工作线程。 服务器使用 `boost::asio::acceptor` 监听连接请求。
+*   **HttpSession (连接/会话):** 在您提供的代码中，框架使用 `HttpSession` 类来处理客户端连接，它负责读取数据、写入数据，以及处理 HTTP 协议特定的细节。 传统上，这些职责通常由一个单独的 `Connection` 类承担。 `HttpSession` 类管理连接的生命周期，并处理部分读取和写入。
+*   **IOContext:** Boost.Asio 的核心组件，管理异步 I/O 操作。 可以将其视为驱动所有异步任务的引擎。 `io_context` 管理事件循环和完成处理程序。
+*   **ThreadPool (线程池):** 用于执行连接处理逻辑的线程池，提高并发性和响应能力。 线程被重用于不同的连接，从而减少了创建和销毁线程的开销。 `ThreadPool` 减少了创建和销毁线程的开销，从而提高了性能。
+*   **RequestHandler (请求处理程序):** 一个抽象类（接口），定义了如何处理客户端请求。 您需要实现具体的 `RequestHandler` 类来处理特定的请求类型或业务逻辑。 `RequestHandler` 接口定义了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。
+*   **ProtocolHandler (协议处理程序):** 处理特定协议的细节（例如，HTTP）。 负责根据协议规则解析传入数据和格式化传出数据。 `ProtocolHandler` 接口定义了 `parseRequest()` 和 `createResponse()` 方法，分别用于解析请求和格式化响应。
 
-These components work together to provide an efficient and scalable server framework.  The `Server` accepts incoming connections, creates a `Connection` object for each, and then uses the `ThreadPool` to assign a thread to handle the connection's processing. The `Connection` object uses the `ProtocolHandler` to manage protocol-related details (like HTTP headers) and passes the processed request to the `RequestHandler` for business logic execution.
+这些组件协同工作，提供了一个高效且可扩展的服务器框架。 `Server` 接受传入的连接，为每个连接创建一个 `HttpSession` 对象，然后使用 `ThreadPool` 分配一个线程来处理连接的处理。 `HttpSession` 对象使用 `ProtocolHandler` 来管理协议相关的细节（如 HTTP 头部），并将处理后的请求传递给 `RequestHandler` 以执行业务逻辑。
 
-## Getting Started
+## 快速入门
 
-### Prerequisites
+### 前提条件
 
-*   **Boost Library:** Required for asynchronous I/O and multi-threading. Install using your system's package manager or Vcpkg (recommended for Windows). See the [Installation](#installation) section for detailed instructions.
-*   **CMake:** Needed to build the project. Download and install CMake from [https://cmake.org/](https://cmake.org/).
-*   **MinGW (Optional, Windows):** Recommended for building on Windows using the MinGW toolchain.
+*   **Boost 库:** 异步 I/O 和多线程所需。 使用系统的包管理器或 Vcpkg 安装 Boost (推荐用于 Windows)。 有关详细说明，请参阅 [安装](#安装) 部分。
+*   **CMake:** 构建项目所需。 从 [https://cmake.org/](https://cmake.org/) 下载并安装 CMake。
+*   **MinGW (可选, Windows):** 推荐在 Windows 上使用 MinGW 工具链进行构建。
 
-### Installation
+### 安装
 
-#### Using Vcpkg (Recommended for Windows)
+#### 使用 Vcpkg (推荐用于 Windows)
 
-Vcpkg is a package manager for C++ libraries on Windows, simplifying the installation process.
+Vcpkg 是 Windows 上 C++ 库的包管理器，简化了安装过程。
 
-1.  Clone the Vcpkg repository:
+1.  克隆 Vcpkg 仓库：
 
     ```bash
     git clone https://github.com/microsoft/vcpkg.git
     ```
 
-2.  Bootstrap Vcpkg:  This prepares Vcpkg for use on your system.
+2.  引导 Vcpkg: 这将准备 Vcpkg 以在您的系统上使用。
 
     ```bash
     cd vcpkg
@@ -55,131 +56,129 @@ Vcpkg is a package manager for C++ libraries on Windows, simplifying the install
     ./bootstrap-vcpkg.sh    # Git Bash
     ```
 
-3.  Integrate Vcpkg with your system:  This sets up Vcpkg to be used by CMake.
+3.  将 Vcpkg 与您的系统集成： 这设置 Vcpkg 以供 CMake 使用。
 
     ```bash
     ./vcpkg integrate install
     ```
 
-4.  Install Boost:  This downloads and builds the Boost libraries.  Choose the correct architecture (x64 for 64-bit builds, x86 for 32-bit).
+4.  安装 Boost： 这将下载并构建 Boost 库。 选择正确的架构（x64 用于 64 位构建，x86 用于 32 位）。
 
     ```bash
-    vcpkg install boost:x64-windows   # 64-bit build
-    vcpkg install boost:x86-windows   # 32-bit build
+    vcpkg install boost:x64-windows   # 64 位构建
+    vcpkg install boost:x86-windows   # 32 位构建
     ```
 
-#### Using apt (Debian/Ubuntu Linux)
+#### 使用 apt (Debian/Ubuntu Linux)
 
 ```bash
 sudo apt update
 sudo apt install libboost-dev libboost-system-dev libboost-thread-dev
 ```
 
-#### Using brew (macOS)
+#### 使用 brew (macOS)
 
 ```bash
 brew install boost
 ```
 
-### Building the Project
+### 构建项目
 
-1.  Clone the repository:
+1.  克隆仓库：
 
     ```bash
     git clone https://github.com/424635328/cpp-asio-server
     cd cpp-asio-server
     ```
 
-2.  Create a build directory:  It's good practice to build in a separate directory to keep your source code clean.
+2.  创建一个构建目录： 最好在单独的目录中进行构建，以保持源代码的整洁。
 
-    **Important:** Before generating build files, you **must** tell CMake where to find Vcpkg. Modify the `CMakeLists.txt` file to specify the Vcpkg toolchain file path:
+    **重要:** 在生成构建文件之前，您 **必须** 告诉 CMake 在哪里可以找到 Vcpkg。 修改 `CMakeLists.txt` 文件以指定 Vcpkg 工具链文件路径：
 
     ```cmake
-    set(CMAKE_TOOLCHAIN_FILE "<path_to_vcpkg>/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg Toolchain File" FORCE)
+    set(CMAKE_TOOLCHAIN_FILE "<vcpkg安装路径>/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg Toolchain File" FORCE)
     ```
-    Replace `<path_to_vcpkg>` with the actual path to your Vcpkg installation.
+    将 `<vcpkg安装路径>` 替换为 Vcpkg 安装的实际路径。
 
-    ```bash
-    mkdir build
-    cd build
-    ```
+3.  使用 CMake 生成构建文件： 使用的命令取决于您的构建环境。
 
-3.  Generate build files using CMake:  The command you use depends on your build environment.
-
-    *   **Using MinGW (Windows):**
+    *   **使用 MinGW (Windows):**
 
         ```bash
         cmake .. -G "MinGW Makefiles"
         ```
 
-    *   **Using Visual Studio (Windows):**
+    *   **使用 Visual Studio (Windows):**
 
         ```bash
-        cmake -B . -S .. -A x64 -DCMAKE_BUILD_TYPE=Release  # Explicitly specify architecture and build type
+        cmake -B build -S . -A x64 -DCMAKE_BUILD_TYPE=Release  # 明确指定架构和构建类型(在项目根目录下运行)
         ```
 
-    *   **Using Make (Linux/macOS):**
+    *   **使用 Make (Linux/macOS):**
 
         ```bash
-        cmake .. -DCMAKE_BUILD_TYPE=Release  # Explicitly specify build type
+        cmake .. -DCMAKE_BUILD_TYPE=Release  # 明确指定构建类型
         ```
 
-4.  Build the project:
+4.  构建项目：
 
-    *   **Using MinGW:**
+    *   **使用 MinGW:**
 
         ```bash
         mingw32-make
         ```
 
-    *   **Using Visual Studio:**
+    *   **使用 Visual Studio:**
 
         ```bash
-        cmake --build . --config Release
+        cmake --build build --config Release   # 在项目根目录下运行
         ```
 
-    *   **Using Make:**
+    *   **使用 Make:**
 
         ```bash
         make
         ```
 
-### Running the Server
+### 运行服务器
 
-1.  Navigate to the build directory (typically `build/` or `build/Release/`, depending on your build system).
-2.  Run the executable:
+1.  导航到构建目录 (通常为 `build/` 或 `build/Release/`，具体取决于您的构建系统)。
+2.  运行可执行文件：
 
     ```bash
     ./my_server_framework  # Linux/macOS
     ./my_server_framework.exe  # Windows
     ```
 
-3.  Open your web browser and visit `http://127.0.0.1:8765`. You should see the expected response (e.g., "Hello, World!" or the contact form).
-4.  Verify the server is running:
+3.  打开您的 Web 浏览器并访问 `http://127.0.0.1:8765`。您应该会看到预期的响应 (例如，"Hello, World!" 或联系表单)。
+
+    **如果出现端口被占用的情况：** 您可以尝试修改 `main.cpp` 文件中的端口号，或者关闭占用该端口的进程。 您可以使用 `netstat -ano | findstr :8765` (Windows) 或 `netstat -tulnp | grep :8765` (Linux/macOS) 命令来查找占用该端口的进程。
+
+4.  验证服务器是否正在运行：
 
     ```bash
     curl http://127.0.0.1:8765  # Linux/macOS
     curl http://127.0.0.1:8765 -o nul # Windows
     ```
 
-    Alternatively, use `netstat`:
+    或者，使用 `netstat`：
 
     ```bash
     netstat -ano | findstr :8765  # Windows
     netstat -tulnp | grep :8765 # Linux/macOS
     ```
 
-## HTTP Server Example in Detail
+## HTTP 服务器示例详解
 
-The framework includes a simple HTTP server example demonstrating how to handle HTTP requests.
+该框架包含一个简单的 HTTP 服务器示例，演示了如何处理 HTTP 请求。
 
-**Key Components:**
+**关键组件：**
 
-*   `MyHttpServer`: The server class, responsible for listening for connections, accepting them, and managing the maximum number of concurrent connections.
-*   `HttpRequestHandler`: Handles the logic for processing HTTP requests and generating appropriate responses.  This is where you define your server's endpoints and behavior.
-*   `HttpSession`: Manages individual client sessions, handling reading requests, sending responses, and potentially keeping connections alive (HTTP keep-alive).
+*   `MyHttpServer`: 服务器类，负责监听连接、接受连接以及管理最大并发连接数。 `MyHttpServer` 继承自 `Server` 类，并重写了 `create_session()` 方法，用于创建 `HttpSession` 对象。
+*   `HttpRequestHandler`: 处理逻辑以处理 HTTP 请求并生成适当响应。 这是定义服务器端点和行为的地方。 `HttpRequestHandler` 类实现了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。 `handle_request()` 方法可以处理静态文件请求、表单提交和 API 请求。
+*   `HttpSession`: 管理单个客户端会话，处理读取请求、发送响应以及潜在地保持连接活动（HTTP 持久连接）。 `HttpSession` 类负责读取 HTTP 请求、调用 `HttpRequestHandler` 处理请求、发送 HTTP 响应，以及关闭连接。
 
-**Code Example:**
+**代码示例：**
 
 ```c++
 #include "server.h"
@@ -187,230 +186,343 @@ The framework includes a simple HTTP server example demonstrating how to handle 
 #include "asio_context.h"
 
 int main() {
-  // Determine the number of hardware threads available.
-  size_t num_threads = std::thread::hardware_concurrency();
+    // 确定可用的硬件线程数。
+    size_t num_threads = std::thread::hardware_concurrency();
 
-  // Create an AsioContext with a thread pool of the determined size. This manages the execution of asynchronous tasks.
-  AsioContext io_context(num_threads);
+    // 创建一个具有确定大小的线程池的 AsioContext。 这管理着异步任务的执行。
+    AsioContext io_context(num_threads);
 
-  // Create the HTTP server, specifying the io_context, port to listen on (8765), and maximum number of connections (1000).
-  MyHttpServer server(io_context, 8765, 1000);
+    // 创建 HTTP 服务器，指定 io_context、要侦听的端口 (8765) 和最大连接数 (1000)。
+    MyHttpServer server(io_context, 8765, 1000);
 
-  // Start the io_context, which begins processing asynchronous tasks.
-  io_context.run();
+    // 启动 io_context，开始处理异步任务。
+    io_context.run();
 
-  return 0;
+    return 0;
 }
 ```
 
-**Request Handling:**
+**请求处理：**
 
-The `HttpRequestHandler` is responsible for parsing HTTP requests and generating responses based on their content. This includes handling static file requests (serving HTML, CSS, JavaScript, images) and processing the example `/contact` form submission.
+`HttpRequestHandler` 负责解析 HTTP 请求并根据其内容生成响应。 这包括处理静态文件请求（提供 HTML、CSS、JavaScript、图像）以及处理示例 `/contact` 表单提交。
 
-**Extending the HTTP Server:**
+**扩展 HTTP 服务器：**
 
-You can easily extend the HTTP server by modifying the `HttpRequestHandler` to add new routes and processing logic.  Refer to the `HttpRequestHandler::handle_request` function for examples of how to add new endpoints and define their behavior.
+您可以通过修改 `HttpRequestHandler` 以添加新路由和处理逻辑来轻松扩展 HTTP 服务器。 请参阅 `HttpRequestHandler::handle_request` 函数，以获取有关如何添加新端点并定义其行为的示例。
 
-## Configuration
+**示例：添加新的路由**
 
-The server can be configured either via command-line options or by modifying the `main.cpp` file.  You can change the listening port, maximum connections, and other parameters.
+```c++
+HttpResponse HttpRequestHandler::handle_request(const HttpRequest& request) {
+    cout << "收到请求: " << request.method << " " << request.uri << endl;
+
+    if (request.uri == "/api/data" && request.method == "GET") {
+        // 处理 /api/data 请求
+        HttpResponse response;
+        response.status_code = 200;
+        response.headers["Content-Type"] = "application/json";
+        response.body = "{\"message\": \"Hello from API\"}";
+        return response;
+    } else if (request.uri == "/contact" && request.method == "POST") {
+        // ... (处理联系表单提交) ...
+    } else {
+        return handle_static_file_request(request);
+    }
+}
+```
+
+**关键代码解释：**
+
+*   **线程池的创建和管理：** `AsioContext` 类负责创建和管理线程池。 线程池的大小应该根据 CPU 核心数和预期的并发连接数进行调整。 过多的线程会导致上下文切换开销，而过少的线程会导致吞吐量降低。 一般来说，线程池的大小设置为 CPU 核心数的 2 倍是一个不错的选择。
+*   **异步 I/O 的使用：** `HttpSession` 类使用 Boost.Asio 的异步 I/O 操作来读取和写入数据。 异步 I/O 允许服务器在等待 I/O 操作完成时处理其他任务，从而提高了吞吐量和响应速度。
+*   **请求处理器的实现：** `HttpRequestHandler` 类实现了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。 `handle_request()` 方法可以处理静态文件请求、表单提交和 API 请求。
+*   **HTTP 状态码的使用：** `HttpRequestHandler` 类使用 HTTP 状态码来指示请求的结果。 例如，`200 OK` 表示请求成功，`404 Not Found` 表示请求的资源不存在。
+
+## 配置
+
+可以通过命令行选项或修改 `main.cpp` 文件来配置服务器。 您可以更改侦听端口、最大连接数以及其他参数。
 
 ```bash
 ./my_server_framework --port 9000 --max_connections 2000
 ```
 
 ```c++
-// main.cpp (Example)
+// main.cpp（示例）
+#include <boost/program_options.hpp> // 引入 boost program_options
+
+namespace po = boost::program_options;
+
 int main(int argc, char* argv[]) {
-    // ... (program_options setup using Boost.Program_options)
-    short port = vm["port"].as<short>();
-    size_t max_connections = vm["max_connections"].as<size_t>();
-    MyHttpServer server(*io_context, port, max_connections);
-    // ...
+    try {
+        // 定义命令行选项
+        po::options_description desc("Allowed options");
+        desc.add_options()
+            ("help", "produce help message") // 帮助信息
+            ("port", po::value<short>()->default_value(8765), "set listening port") // 设置监听端口
+            ("max_connections", po::value<size_t>()->default_value(std::numeric_limits<size_t>::max()), "set max connections"); // 设置最大连接数
+
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm); // 解析命令行参数
+        po::notify(vm);
+
+        if (vm.count("help")) {
+            cout << desc << endl;
+            return 0;
+        }
+
+        short port = vm["port"].as<short>(); // 获取端口号
+        size_t max_connections = vm["max_connections"].as<size_t>(); // 获取最大连接数
+
+        // ... (创建 AsioContext 和 MyHttpServer) ...
+
+    } catch (exception& e) {
+        cerr << "异常: " << e.what() << endl;
+        return 1;
+    }
+
+    return 0;
 }
 ```
 
-**Thread Pool Configuration:**
+**Boost.Program_options 使用说明：**
 
-The size of the thread pool is configured within the `AsioContext` constructor. Generally, set it to equal the number of hardware threads available for optimal performance.
+*   **定义选项：** 使用 `po::options_description` 类定义命令行选项。 每个选项都有一个名称、一个描述和一个类型。
+*   **解析命令行：** 使用 `po::store()` 函数解析命令行参数，并将结果存储在 `po::variables_map` 对象中。
+*   **访问选项：** 使用 `vm["option_name"].as<type>()` 方法访问选项的值。
+
+**线程池配置：**
+
+线程池的大小在 `AsioContext` 的构造函数中配置。 通常，将其设置为等于可用的硬件线程数，以获得最佳性能。
 
 ```c++
 size_t num_threads = std::thread::hardware_concurrency();
 AsioContext io_context(num_threads);
 ```
 
-**Error Handling and Logging:**
+**线程池大小的权衡：**
 
-The framework leverages Boost.Asio's `boost::system::error_code` for consistent error handling in asynchronous operations. Check the `error_code` object after each asynchronous operation to determine if the operation was successful. Basic logging is provided using `std::cout` and `std::cerr`, with all console output protected by a mutex for thread safety.
+*   **过多的线程：** 会导致上下文切换开销增加，从而降低性能。
+*   **过少的线程：** 会导致吞吐量降低，因为服务器无法充分利用 CPU 资源。
 
-**Note:** Ensure all console output (including logging messages) is in English to minimize potential warnings and errors during CMake execution and to maintain consistency.
+**建议的线程池大小计算方法：**
 
-## Extending Protocol Support
+*   `线程数 = CPU 核心数 * 2`
 
-The framework allows you to add support for custom protocols by implementing the `ProtocolHandler` interface.
+**错误处理和日志记录：**
 
-1.  **Define a Protocol Handler Class:** Create a class that inherits from `ProtocolHandler`.  This class will contain the logic for parsing and generating protocol-specific data.
+该框架利用 Boost.Asio 的 `boost::system::error_code` 在异步操作中实现一致的错误处理。 在每次异步操作之后，检查 `error_code` 对象以确定操作是否成功。 使用 `std::cout` 和 `std::cerr` 提供基本日志记录，所有控制台输出都受到互斥锁的保护，以确保线程安全。
+
+**注意：** 确保所有控制台输出（包括日志消息）均为英文，以最大程度地减少 CMake 执行期间的潜在警告和错误，并保持一致性。 `AsioContext::cout_mutex` 用于保护 `std::cout` 和 `std::cerr` 的访问，以避免多线程环境下的竞争条件。 不正确使用互斥锁可能会导致死锁，请确保始终以相同的顺序获取互斥锁。
+
+**示例：错误处理**
+
+```c++
+boost::asio::async_read(socket_, buffer_, boost::asio::transfer_at_least(1),
+    [this](boost::system::error_code ec, size_t bytes_transferred) {
+        if (ec) {
+            std::cerr << "Error reading from socket: " << ec.message() << std::endl;
+            stop();
+            return;
+        }
+        // ... (处理读取的数据) ...
+    });
+```
+
+## 扩展协议支持
+
+该框架允许您通过实现 `ProtocolHandler` 接口来添加对自定义协议的支持。 **请注意，在当前的代码结构中，协议处理的逻辑主要集中在 `HttpSession` 类中，而不是一个独立的 `Connection` 类。**
+
+1.  **定义一个协议处理程序类：** 创建一个继承自 `ProtocolHandler` 的类。 此类将包含用于解析和生成协议特定数据的逻辑。
 
     ```c++
     class MyProtocolHandler : public ProtocolHandler {
     public:
-        // Implement the protocol parsing logic.  Extract the request from the buffer, return the request string and the number of bytes consumed.
-        std::pair<std::string, size_t>  parseRequest(boost::asio::streambuf& buffer) override {
-            // ... (Protocol parsing logic) ...
+        // 实现协议解析逻辑。 从缓冲区中提取请求，返回请求字符串和已消耗的字节数。
+        std::pair<std::string, size_t> parseRequest(boost::asio::streambuf& buffer) override {
+            // ... (协议解析逻辑) ...
         }
 
-        // Convert the response string into a sequence of buffers that can be sent over the socket.
-        std::vector<boost::asio::const_buffer>  createResponse(const std::string& response) override {
-            // ... (Response formatting logic) ...
+        // 将响应字符串转换为可以在套接字上发送的一系列缓冲区。
+        std::vector<boost::asio::const_buffer> createResponse(const std::string& response) override {
+            // ... (响应格式化逻辑) ...
         }
     };
     ```
 
-2.  **Register the Protocol Handler:** In the `Connection` class, determine the protocol being used (e.g., by inspecting the initial bytes of the connection) and select the appropriate `ProtocolHandler` implementation.
+2.  **修改 `HttpSession` 类以支持新的协议：**
+
+    *   **协议识别：** 在 `HttpSession::start()` 方法中，添加逻辑以识别当前连接使用的协议。 这可能涉及读取连接的初始几个字节，并根据这些字节判断协议类型。
+    *   **协议处理程序选择：** 根据识别出的协议，创建相应的 `ProtocolHandler` 对象。
+    *   **请求处理：** 修改 `HttpSession::do_read()` 和 `HttpSession::do_write()` 方法，使用选定的 `ProtocolHandler` 来解析请求和格式化响应。
+
+    **示例：修改 `HttpSession::start()`**
 
     ```c++
-    // Inside the Connection class:
-    void Connection::start() {
-      // Determine the protocol (e.g., by reading the initial bytes)
-      if (isMyProtocol()) {
-        protocol_handler_ = std::make_shared<MyProtocolHandler>();
-      } else {
-        protocol_handler_ = std::make_shared<HttpProtocolHandler>();
-      }
-      doRead();  // Start reading data from the socket using the selected protocol handler.
+    void HttpSession::start() {
+        {
+            std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+            cout << "HTTP Session started." << endl;
+        }
+        try {
+            // 确定协议 (示例：检查前几个字节)
+            boost::asio::async_read(socket_, boost::asio::buffer(read_buffer_, 4), // 读取 4 个字节
+                [this](boost::system::error_code ec, std::size_t bytes_transferred) {
+                    if (!ec) {
+                        std::string protocol_identifier(read_buffer_, bytes_transferred);
+                        if (protocol_identifier == "MYPR") { // 自定义协议标识
+                            protocol_handler_ = std::make_shared<MyProtocolHandler>();
+                        } else {
+                            protocol_handler_ = std::make_shared<HttpProtocolHandler>();
+                        }
+                        do_read(); // 开始读取数据 (使用正确的协议处理程序)
+                    } else {
+                        std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+                        cerr << "Error reading protocol identifier: " << ec.message() << endl;
+                        stop();
+                    }
+                });
+
+        } catch (std::exception& e) {
+            std::lock_guard<std::mutex> lock(AsioContext::cout_mutex);
+            cerr << "Exception in HttpSession::start: " << e.what() << endl;
+            stop(); // 发生异常，停止会话
+        }
     }
     ```
 
-## More Code Examples
+    **注意：** 您还需要相应地修改 `HttpSession::do_read()` 和 `HttpSession::do_write()` 方法，以便使用 `protocol_handler_` 来解析请求和格式化响应。
 
-*   **Simple Echo Server:**
+## 更多代码示例
+
+*   **简单的回显服务器：**
 
     ```c++
     class EchoRequestHandler : public RequestHandler {
     public:
-      HttpResponse handle_request(const HttpRequest& request) override {
-        HttpResponse response;
-        response.status_code = 200;
-        response.body = request.body; // Echo back the request body.  Whatever the client sends, the server sends back.
-        response.headers["Content-Type"] = "text/plain";
-        return response;
-      }
+        HttpResponse handle_request(const HttpRequest& request) override {
+            HttpResponse response;
+            response.status_code = 200;
+            response.body = request.body; // 将请求正文回显到客户端。 无论客户端发送什么，服务器都会发回什么。
+            response.headers["Content-Type"] = "text/plain";
+            return response;
+        }
     };
     ```
 
-*   **Static File Server:**
+*   **静态文件服务器：**
 
-    The framework's `HttpRequestHandler` already includes static file serving functionality. Place your files in the `web/` directory, and they will be accessible via HTTP. By default, accessing the root path (`/`) will serve the `web/index.html` file.
+    该框架的 `HttpRequestHandler` 已经包含静态文件服务功能。 将您的文件放在 `web/` 目录中，它们将可以通过 HTTP 访问。 默认情况下，访问根路径 (`/`) 将提供 `web/index.html` 文件。
 
-## Code Style Conventions
+    **目录结构：**
 
-To maintain consistency and readability within the codebase, please adhere to the following code style conventions:
+    ```
+    cpp-asio-server/
+    ├── web/
+    │   ├── index.html
+    │   ├── style.css
+    │   └── script.js
+    ├── src/
+    │   ├── ...
+    ├── ...
+    ```
 
-*   Use 4 spaces for indentation.
-*   Use PascalCase (also known as upper CamelCase) for class and function names (e.g., `MyClass`, `CalculateValue`).
-*   Use snake_case for variable names (e.g., `my_variable`, `user_name`).
-*   Add appropriate comments to explain the purpose and functionality of your code.  Focus on *why* the code does what it does, not just *what* it does.
-*   Write comments and documentation in English.
+## 代码风格约定
 
-## Contributing
+为了保持代码库中的一致性和可读性，请遵循以下代码风格约定：
 
-Contributions are welcome! Please follow these guidelines:
+*   使用 4 个空格进行缩进。
+*   对于类和函数名称，使用 PascalCase（也称为大驼峰式命名）(例如，`MyClass`，`CalculateValue`)。
+*   对于变量名，使用 snake_case (例如，`my_variable`，`user_name`)。
+*   添加适当的注释来解释代码的目的和功能。 专注于代码 *为什么* 要执行它所执行的操作，而不仅仅是代码 *做什么*。
+*   用英语编写注释和文档。
+*   使用代码格式化工具（例如，clang-format）来自动格式化代码，以确保代码库中的一致性。
 
-1.  Fork the repository.
-2.  Create a new branch for your feature or bug fix.  Give the branch a descriptive name.
+## 贡献
+
+欢迎贡献！ 请遵循以下准则：
+
+1.  Fork 该仓库。
+2.  为您的功能或错误修复创建一个新分支。 为分支提供一个描述性名称。
     ```bash
     git checkout -b feature/my-new-feature
     ```
-3.  Implement your changes and commit them with clear, concise, and informative commit messages.
+3.  实现您的更改并提交它们，并使用清晰、简洁和信息丰富的提交消息。
 
-    *   Commit messages should summarize the changes made in the commit.
-    *   If your changes fix a bug, include the bug number in the commit message.
-    *   If your changes add a new feature, provide a brief code example demonstrating the feature's usage.
+    *   提交消息应概括提交中所做的更改。
+    *   如果您的更改修复了一个错误，请在提交消息中包含错误编号。
+    *   如果您的更改添加了一个新功能，请提供一个简短的代码示例，演示该功能的用法。
+    *   遵循 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 规范，以使提交历史更加清晰和一致。
 
     ```bash
-    git commit -m "Add my new feature: Implemented X, Y, and Z"
+    git commit -m "feat: 添加我的新功能：实现了 X、Y 和 Z"
     ```
 
-4.  Before submitting a pull request, ensure your code adheres to the code style conventions.
-5.  Run all unit tests (if applicable) to verify that your changes have not introduced regressions.
-6.  Submit a pull request.
+4.  在提交拉取请求之前，请确保您的代码符合代码风格约定。
+5.  运行所有单元测试（如果适用），以验证您的更改是否没有引入回归。
+6.  提交拉取请求。
 
-    *   In the pull request description, provide a detailed explanation of the changes you've made.
-    *   If your changes fix a bug, include the bug number in the pull request description.
-    *   If your changes add a new feature, provide a brief code example demonstrating the feature's usage in the pull request description.  This makes it easier for reviewers to understand your changes.
+    *   在拉取请求说明中，提供您所做更改的详细说明。
+    *   如果您的更改修复了一个错误，请在拉取请求说明中包含错误编号。
+    *   如果您的更改添加了一个新功能，请提供一个简短的代码示例，演示在拉取请求说明中该功能的用法。
 
-7.  Code Review: Other contributors will review your code, provide feedback, and suggest improvements. Be prepared to address any feedback you receive.
-8.  Testing: Your code will be automatically tested to ensure that it does not break existing functionality.
-9.  Merge: Once your code has passed code review and testing, it will be merged into the main branch.
+7.  代码审查：其他贡献者将审查您的代码，提供反馈并提出改进建议。 准备好处理收到的任何反馈。
+8.  测试：您的代码将被自动测试，以确保它不会破坏现有功能。
+9.  合并：一旦您的代码通过代码审查和测试，它将被合并到主分支中。
 
-## FAQ (Frequently Asked Questions)
+## 性能测试和基准测试
 
-*   **Q: How do I handle a high volume of concurrent connections?**
+为了评估框架的性能，我们进行了一系列基准测试。
 
-    *   A: The framework uses Boost.Asio's asynchronous I/O and a thread pool to efficiently manage high concurrency.  To increase capacity, you can adjust the thread pool size and the maximum number of allowed connections. The key is to avoid blocking operations in your request handlers.
+## 性能测试
 
-*   **Q: How do I add support for a custom protocol?**
+本节展示了对服务器进行的初步性能基准测试结果。请注意，这些结果仅供参考，实际性能可能因环境而异。
 
-    *   A: Implement the `ProtocolHandler` interface and register it in the `Connection` class. See the [Extending Protocol Support](#extending-protocol-support) section for details.
+**测试环境:**
 
-*   **Q: How do I perform performance testing?**
+*   CPU: Intel Core r7-5800H
+*   内存: 16GB DDR4
+*   操作系统: Ubuntu 20.04
 
-    *   A: Use tools like `ab` (Apache Benchmark) or `wrk` to benchmark the server. See the [Performance Testing and Benchmarking](#performance-testing-and-benchmarking) section.
+**测试工具:**
 
-*   **Q: How do I build the project on Windows using Visual Studio?**
+*   `wrk` (https://github.com/wg/wrk) - HTTP基准测试工具
 
-    *   A: Ensure that you have Visual Studio installed and that you specify the Visual Studio generator during CMake configuration (e.g., `cmake -B . -S .. -A x64 -DCMAKE_BUILD_TYPE=Release`). After generating the build files, you can open the generated solution file (`.sln`) in Visual Studio and build the project.
+**测试用例:**
 
-## Performance Testing and Benchmarking
+*   **Hello World:** 服务器返回一个简单的 "Hello, World!" 字符串。
+*   **静态网页:** 服务器返回已加载 WASM 模块的 `index.html` 页面 (更改日期:2025.03.23)。
 
-This section presents preliminary performance benchmark results for the server.  Please note that these results are for informational purposes only, and actual performance may vary depending on the environment.
+**测试结果 (持续更新):**
 
-**Test Environment:**
+| 测试用例      | 并发连接数 | 每秒请求数 (RPS) | 平均延迟 (毫秒) |
+| ----------- | -------- | ------------- | ----------- |
+| Hello World | 100      | 10000         | TBD         |
+| Hello World | 1000     | 80000         | TBD         |
+| 静态网页    | 100      | -             | -           |
+| 静态网页    | 1000     | -             | -           |
 
-*   CPU: Intel Core i7-8700K
-*   Memory: 16GB DDR4
-*   Operating System: Ubuntu 20.04
+*TBD: 待确定 (To Be Determined)*
 
-**Test Tool:**
-
-*   `wrk` (https://github.com/wg/wrk) - HTTP benchmarking tool
-
-**Test Cases:**
-
-*   **Hello World:** The server returns a simple "Hello, World!" string.
-*   **Static Page:** The server returns an `index.html` page with a loaded WASM module (date 2025.03.23 triggers this).
-
-**Test Results (Continuously Updated):**
-
-| Test Case   | Concurrent Connections | Requests per Second (RPS) | Average Latency (ms) |
-| ---------   | -------------------- | ----------------------- | -------------------- |
-| Hello World | 100                  | 10000                   | TBD                  |
-| Hello World | 1000                 | 80000                   | TBD                  |
-| Static Page | 100                  | -                       | -                    |
-| Static Page | 1000                 | -                       | -                    |
-
-*TBD: To Be Determined*
-
-**Test Command:**
+**测试命令:**
 
 ```bash
 wrk -t12 -c100 -d10s http://127.0.0.1:8765
 ```
 
-Parameter Explanations:
+参数说明:
 
-*   `-t12`: Use 12 threads.
-*   `-c100`: Keep 100 concurrent connections.
-*   `-d10s`: Test duration is 10 seconds.
+*   `-t12`: 使用 12 个线程。
+*   `-c100`: 保持 100 个并发连接。
+*   `-d10s`: 测试持续 10 秒。
 
-**Disclaimer:**
+**免责声明:**
 
-The test results above were obtained under specific hardware and software configurations. Actual performance may vary due to differences in hardware, network conditions, server configuration, and other factors. We strongly recommend conducting benchmarks in your own environment to obtain more accurate results. We will periodically update these test results and add more test cases.
+上述测试结果是在特定硬件和软件配置下获得的。 实际性能可能因硬件、网络条件、服务器配置以及其他因素而有所不同。我们强烈建议您在自己的环境中进行基准测试，以获得更准确的结果。 我们会定期更新这些测试结果，并添加更多测试用例。
 
-## License
+## 许可证
 
-This project is licensed under the [MIT License](LICENSE).
+该项目已获得 [MIT 许可证](LICENSE) 的许可。
 
-## Contact
+## 联系方式
 
 MiracleHcat@gmail.com

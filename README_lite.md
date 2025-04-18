@@ -1,6 +1,6 @@
-[English](README.md) | [中文 (Chinese)](README_zh.md) | [中文简化版](README_lite.md)
-
 # 服务器框架 (Boost.Asio)
+
+[Chinese](README.md) | [English](README_en.md) | [中文简化版](README_lite.md)
 
 一个基于 Boost.Asio 构建的简单高效的服务器框架，方便扩展和定制。
 
