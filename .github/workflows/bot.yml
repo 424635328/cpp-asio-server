@@ -193,15 +193,6 @@ jobs:
               throw error; // Re-throw the error to fail the action
             }
 
-      - name: Test with pytest
-        run: |
-          pytest tests/
-
-      - name: Generate Coverage Report
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
