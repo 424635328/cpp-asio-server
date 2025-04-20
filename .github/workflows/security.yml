@@ -1,67 +1,72 @@
-name: Security Scan
+name: Security Checks
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
   schedule:
-    - cron: '0 0 * * 0'  # Run weekly on Sunday (UTC)
+    - cron: '0 0 * * 0' # Run weekly on Sunday at midnight UTC
 
 jobs:
-  security:
+  dependency-check:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          submodules: recursive # If you have submodules
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install bandit safety
-
-      - name: Run Bandit security scan
-        run: |
-          set -e # Exit immediately if a command exits with a non-zero status.
-          bandit -r src/ -f json -o bandit-results.json
-
-      - name: Run Safety dependency check
-        run: |
-          set -e
-          safety check --full-report --output safety-results.json || true #Ignore failure as return code is always non-zero
-
-      - name: Upload security scan results
-        uses: actions/upload-artifact@v4
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
         with:
-          name: security-scan-results
-          path: |
-            bandit-results.json
-            safety-results.json
+          fail-on-severity: "high" # Optional: Set a threshold for failure.  Can be "critical", "high", "moderate", "low".  Defaults to "high"
 
-      - name: Check for vulnerabilities and fail if found
-        run: |
-          # Check if either bandit or safety found vulnerabilities
-          BANDIT_VULNS=$(jq '.results | length' bandit-results.json)  # Count the number of issues
-          SAFETY_VULNS=$(jq 'length' safety-results.json)   # Count the number of issues
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
 
-          if [[ "$BANDIT_VULNS" -gt 0 ]]; then
-            echo "Bandit Security vulnerabilities found!"
-            echo "Number of vulnerabilities found: $BANDIT_VULNS"
-            jq '.results[] | { filename: .filename, line_number: .line_number, issue_severity: .issue_severity, issue_text: .issue_text }' bandit-results.json
-            exit 1  # Fail the workflow
-          fi
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive # If you have submodules
 
-          if [[ "$SAFETY_VULNS" -gt 0 ]]; then
-            echo "Safety Dependency vulnerabilities found!"
-            echo "Number of vulnerabilities found: $SAFETY_VULNS"
-            jq '.vulnerabilities[] | { package_name: .package_name, analyzed_version: .analyzed_version, advisory: .advisory, advisory_url: .advisory_url }' safety-results.json
-            exit 1
-          fi
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: cpp # Or other relevant languages
 
-          echo "No security vulnerabilities found."
+      # Autobuild attempts to build any codeql supported languages.
+      # You can remove this step if you don't want it, but you
+      # should replace it with your own build steps. If your
+      # project is complex, you *must* replace the Autobuild step
+      # with your own steps, or the CodeQL analysis may not
+      # function correctly.
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      # Performs CodeQL Analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}" # For multiple languages.
+
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Run Semgrep
+        run: semgrep ci

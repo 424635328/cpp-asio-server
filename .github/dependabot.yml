@@ -1,20 +1,31 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/"
+    directory: "/"  # 监控根目录的依赖项
     schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "09:00"
-      timezone: "UTC"
-    open-pull-requests-limit: 10
+      interval: "weekly"  # 每周检查更新
+      day: "sunday"  # 在周日检查更新
+      time: "09:00"  # UTC时间早上9点检查更新
+      timezone: "UTC"  # 时区设置为UTC
+    open-pull-requests-limit: 10  # 最多同时打开10个PR
     reviewers:
-      - "424635328"
+      - "424635328"  # 指定代码审查者
     assignees:
-      - "424635328"
+      - "424635328"  # 指定PR的负责人
     labels:
-      - "dependencies"
-      - "python"
+      - "dependencies"  # 为PR添加标签"dependencies"
+      - "python"  # 为PR添加标签"python"
     commit-message:
-      prefix: "pip"
-      include: "scope"
+      prefix: "pip"  # Commit消息前缀为"pip"
+      include: "scope"  # Commit消息包含变动范围(package name)
+    ignore:
+      - dependency-name: "setuptools"  # 忽略setuptools的更新
+        versions: [">60.0.0"]  # 忽略高于60.0.0版本的setuptools
+    pull-request-branch-name:
+      separator: "-"  # 分隔符使用短划线
+    #  prefix: "dependency-update"  # 分支名称前缀 可选
+    #  include: scope # 分支名称包含变动范围(package name)
+    recreate-closed-pull-requests: false # 如果依赖更新已经被关闭，不重新打开新的PR
+    #  commit-message:
+    #   prefix: 'chore' #Commit Message 的前缀
+    #   prefix-development: 'fix' #Commit Message 在 Development 分支的前缀

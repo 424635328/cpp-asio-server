@@ -3,46 +3,94 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*' # Triggers on any tag that starts with 'v'
 
 jobs:
-  release:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest] # Consider only supporting platforms you can test well
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive # 确保检出子模块
+
+      - name: Install Dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libboost-dev libboost-system-dev libboost-thread-dev
+
+      - name: Install Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install boost
+
+      - name: Set up MSVC environment (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64 # Adjust as needed (x64, x86, arm64)
+
+      - name: Configure CMake
+        run: |
+          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -S ${{github.workspace}}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config Release
+
+      - name: Create Release Archive (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          cd ${{github.workspace}}/build
+          tar -czvf release.tar.gz * # 可以根据实际情况修改压缩的内容
+
+      - name: Create Release Archive (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cd ${{github.workspace}}/build
+          tar -czvf release.tar.gz * # 可以根据实际情况修改压缩的内容
+
+      - name: Create Release Archive (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd ${{github.workspace}}/build/Release
+          7z a release.zip * # 需要安装 7z (如果还没有)
+          # 示例：如果你想把 Release 目录压缩成 zip
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} # This pulls from the CREATE RELEASE event
+          asset_path: ${{github.workspace}}/build/release.tar.gz # Linux/macOS
+          asset_name: release_${{matrix.os}}.tar.gz # Customize as needed
+          asset_content_type: application/gzip
+        if: runner.os != 'Windows'
+
+      - name: Upload Windows Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }} # This pulls from the CREATE RELEASE event
+          asset_path: ${{github.workspace}}/build/Release/release.zip
+          asset_name: release_Windows.zip
+          asset_content_type: application/zip
+        if: runner.os == 'Windows'
+
+  create_release: #This job should run only after the build job finishes successfully
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-
-      - name: Build package
-        run: |
-          python -m build
-
-      - name: Upload package artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: python-package
-          path: dist/
-
-      - name: Publish to PyPI
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Create Release
+        uses: actions/create-release@v1
         env:
-          TWINE_USERNAME: __token__
-        run: |
-          twine upload dist/*
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: |
-            dist/*
-          generate_release_notes: true
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false

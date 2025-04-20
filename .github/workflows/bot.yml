@@ -2,65 +2,48 @@ name: Enhanced Multi-Purpose Bot
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed] # PR 打开，同步，重新打开, 关闭
+    types: [opened, synchronize, reopened, closed]
   issues:
-    types: [opened, edited, closed]   # Issue 打开，编辑, 关闭
-  issue_comment:  # 当在 issue 或 PR 上添加评论时触发
+    types: [opened, edited, closed]
+  issue_comment:
     types: [created, edited]
-  push: # 添加 push 事件，确保 CI 功能也运行
-    branches: [ main ]
+  push:
+    branches: [main]
   schedule:
-    - cron: '0 0 * * *'  # 每天午夜运行 (用于关闭不活跃的 Issue)
+    - cron: '0 0 * * *'
 
 jobs:
   bot:
     runs-on: ubuntu-latest
-    strategy: # 添加 matrix 策略以支持多 Python 版本测试
+    strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install flake8 autopep8 pytest  # 安装 flake8 和 autopep8
+          pip install flake8 autopep8 pytest coverage pre-commit
+
+      - name: Pre-commit
+        run: pre-commit run --all-files
 
       - name: Lint with flake8
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-      - name: Run Autopep8 and Create Changes
-        if: github.event_name == 'pull_request' # 仅在 pull_request 时运行
-        run: |
-          autopep8 --in-place --recursive --aggressive --aggressive .
-          git diff --exit-code || echo "Code style issues found, creating a patch"
-          git diff > changes.patch || echo "No style changes to apply"
-
-      - name: Apply changes (if any)
-        if: github.event_name == 'pull_request'
-        run: |
-          if [ -s changes.patch ]; then
-            # 将更改提交到 PR
-            git config --global user.name 'GitHub Actions Bot'
-            git config --global user.email 'actions@github.com'
-            git apply changes.patch
-            git add .
-            git commit -m "Automated PEP8 formatting"
-
-            # 推送到 PR 分支
-            git remote set-url origin https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}
-            git push origin HEAD:${GITHUB_HEAD_REF}
-          else
-            echo "No changes to apply."
-          fi
 
       - name: Multi-Function Bot Core
         uses: actions/github-script@v6
@@ -69,47 +52,61 @@ jobs:
             const github = require('@actions/github');
             const context = github.context;
 
-            // === Welcome New Contributor ===
+            /**
+             * Welcomes new contributors with a personalized message on their first issue or PR.
+             *
+             * @returns {Promise<void>}
+             */
             async function welcomeNewContributor() {
               if (github.event.sender.type == 'User') {
                 const isFirstContribution = async () => {
-                  const { data: pulls } = await github.rest.pulls.list({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    state: 'all',
-                    creator: context.actor,  // 贡献者
-                  });
+                  try{
+                    const { data: pulls } = await github.rest.pulls.list({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      state: 'all',
+                      creator: context.actor,
+                    });
 
-                  const { data: issues } = await github.rest.issues.listForRepo({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    state: 'all',
-                    creator: context.actor,
-                  });
+                    const { data: issues } = await github.rest.issues.listForRepo({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      state: 'all',
+                      creator: context.actor,
+                    });
 
-                  return pulls.length <= 1 && issues.length <= 1; // 如果这是第一个 issue 或 pr
+                    return pulls.length + issues.length === 0; //更准确地判断是否是第一个贡献
+                  } catch (error) {
+                    console.error("Error checking contribution history:", error);
+                    return false;  // 遇到错误，默认不是第一次贡献，防止 Action 失败
+                  }
+
                 };
 
-                if (await isFirstContribution()) {
-                  const message = `
-                    🎉 Welcome to the project, @${context.actor}! 🎉
+                try {
+                  if (await isFirstContribution()) {
+                    const message = `🎉 Welcome to the project, @${context.actor}! 🎉\n\nThank you so much for your first contribution! We really appreciate you taking the time to contribute.  We will review your pull request (or issue) as soon as possible.`;
 
-                    Thank you so much for your first contribution! We really appreciate you taking the time to contribute.
-                    We will review your pull request (or issue) as soon as possible.
-                  `;
-
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: context.issue.number,
-                    body: message,
-                  });
+                    await github.rest.issues.createComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: context.issue.number,
+                      body: message,
+                    });
+                  }
+                } catch (error) {
+                  console.error("Error welcoming new contributor:", error);
                 }
               }
             }
 
-            // === Label Issues/PRs ===
+            /**
+             * Labels issues and PRs based on keywords found in their titles.
+             *
+             * @returns {Promise<void>}
+             */
             async function labelIssuesAndPRs() {
+              try {
                 const title = context.payload.pull_request ? context.payload.pull_request.title : context.payload.issue.title;
                 const issueNumber = context.issue.number;
 
@@ -135,91 +132,129 @@ jobs:
                     labels: labels,
                   });
                 }
+              } catch (error) {
+                console.error("Error labeling issue/PR:", error);
+              }
             }
 
-            // === Comment when PR is closed ===
+            /**
+             * Comments on a PR when it is closed (merged or not).
+             *
+             * @returns {Promise<void>}
+             */
             async function commentWhenPRClosed() {
-               if (github.event_name === 'pull_request' && context.payload.action === 'closed') {
-                const merged = context.payload.pull_request.merged;
-                const commentBody = merged ? "🎉 This PR has been successfully merged! 🎉" : "This PR has been closed without merging.";
+              try {
+                if (github.event_name === 'pull_request' && context.payload.action === 'closed') {
+                  const merged = context.payload.pull_request.merged;
+                  const commentBody = merged ? "🎉 This PR has been successfully merged! 🎉" : "This PR has been closed without merging.";
 
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.issue.number,
-                  body: commentBody,
-                });
-              }
-            }
-
-            // === React to specific issue comments ===
-            async function reactToIssueComments() {
-                if (github.event_name === 'issue_comment' && context.payload.action === 'created' || context.payload.action === 'edited') {
-                    const commentBody = context.payload.comment.body.toLowerCase();
-                    const commentId = context.payload.comment.id;
-
-                    if (commentBody.includes('good job') || commentBody.includes('nice work')) {
-                      // React with a thumbs up
-                      await github.rest.reactions.createForIssueComment({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        comment_id: commentId,
-                        content: '+1', // Thumbs up
-                      });
-                    }
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: commentBody,
+                  });
                 }
-            }
-
-             // === Run the functions ===
-            if (github.event_name === 'pull_request' || github.event_name === 'issues') {
-              await welcomeNewContributor();
-              await labelIssuesAndPRs();
-
-              if (github.event_name === 'pull_request' && context.payload.action === 'closed') {
-                await commentWhenPRClosed();
+              } catch (error) {
+                console.error("Error commenting on PR closure:", error);
               }
             }
-            if (github.event_name === 'issue_comment') {
-                await reactToIssueComments();
+
+            /**
+             * Reacts to specific comments on issues with a thumbs up emoji.
+             *
+             * @returns {Promise<void>}
+             */
+            async function reactToIssueComments() {
+              try {
+                if (github.event_name === 'issue_comment' && (context.payload.action === 'created' || context.payload.action === 'edited')) {
+                  const commentBody = context.payload.comment.body.toLowerCase();
+                  const commentId = context.payload.comment.id;
+
+                  if (commentBody.includes('good job') || commentBody.includes('nice work')) {
+                    // React with a thumbs up
+                    await github.rest.reactions.createForIssueComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      comment_id: commentId,
+                      content: '+1', // Thumbs up
+                    });
+                  }
+                }
+              } catch (error) {
+                console.error("Error reacting to issue comment:", error);
+              }
             }
+
+            try {
+              if (github.event_name === 'pull_request' || github.event_name === 'issues') {
+                await welcomeNewContributor();
+                await labelIssuesAndPRs();
+
+                if (github.event_name === 'pull_request' && context.payload.action === 'closed') {
+                  await commentWhenPRClosed();
+                }
+              }
+              if (github.event_name === 'issue_comment') {
+                await reactToIssueComments();
+              }
+            } catch (error) {
+              console.error("Error during bot execution:", error);
+              throw error; // Re-throw the error to fail the action
+            }
+
       - name: Test with pytest
         run: |
-          pytest tests/ # 运行 tests/ 目录下的测试
+          pytest tests/
+
+      - name: Generate Coverage Report
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Close Inactive Issues (Scheduled)
-        if: github.event_name == 'schedule' # 仅在 schedule 事件触发时运行
+        if: github.event_name == 'schedule'
         uses: actions/github-script@v6
         with:
           script: |
             const github = require('@actions/github');
             const context = github.context;
 
-            const DAYS_BEFORE_CLOSE = 30; // 不活跃多少天后关闭
+            const DAYS_BEFORE_CLOSE = 30;
 
-            const getInactiveIssues = async () => {
-              const { data: issues } = await github.rest.issues.listForRepo({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                state: 'open',
-                sort: 'updated',
-                direction: 'asc',  # 最早更新的
-                per_page: 100,
-              });
+            async function getInactiveIssues() {
+              try {
+                const { data: issues } = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  sort: 'updated',
+                  direction: 'asc',
+                  per_page: 100,
+                });
 
-              const now = new Date();
-              const inactiveIssues = issues.filter(issue => {
-                const updatedAt = new Date(issue.updated_at);
-                const diff = now.getTime() - updatedAt.getTime();
-                const days = Math.ceil(diff / (1000 * 3600 * 24));
-                return days >= DAYS_BEFORE_CLOSE && !issue.pull_request; // 仅 issue，不包括 PR
-              });
-              return inactiveIssues;
-            };
+                const now = new Date();
+                const inactiveIssues = issues.filter(issue => {
+                  const updatedAt = new Date(issue.updated_at);
+                  const diff = now.getTime() - updatedAt.getTime();
+                  const days = Math.ceil(diff / (1000 * 3600 * 24));
+                  return days >= DAYS_BEFORE_CLOSE && !issue.pull_request;
+                });
+                return inactiveIssues;
+              } catch (error) {
+                console.error("Error listing issues:", error);
+                return []; // 发生错误时返回空数组，避免 Action 失败
+              }
+            }
 
-            const inactiveIssues = await getInactiveIssues();
-
-            if (inactiveIssues.length > 0) {
-              for (const issue of inactiveIssues) {
-                const issueNumber = issue.number;
+            async function closeIssue(issue) {
+              const issueNumber = issue.number;
+              try {
                 const message = `This issue has been automatically closed due to inactivity.`;
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
@@ -233,10 +268,24 @@ jobs:
                   repo: context.repo.repo,
                   issue_number: issueNumber,
                   state: 'closed',
-                  reason: 'not_planned', // or 'completed' if appropriate
+                  reason: 'not_planned',
                 });
                 console.log(`Closed issue #${issueNumber}`);
+              } catch (error) {
+                console.error(`Error closing issue #${issueNumber}:`, error);
               }
-            } else {
-              console.log('No inactive issues found.');
             }
+
+            async function main() {
+              const inactiveIssues = await getInactiveIssues();
+
+              if (inactiveIssues.length > 0) {
+                for (const issue of inactiveIssues) {
+                  await closeIssue(issue);
+                }
+              } else {
+                console.log('No inactive issues found.');
+              }
+            }
+
+            await main();
