@@ -193,15 +193,6 @@ jobs:
               throw error; // Re-throw the error to fail the action
             }
 
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
-          verbose: true
-
       - name: Close Inactive Issues (Scheduled)
         if: github.event_name == 'schedule'
         uses: actions/github-script@v6
