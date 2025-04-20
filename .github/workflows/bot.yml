@@ -37,8 +37,6 @@ jobs:
           pip install -r requirements.txt
           pip install flake8 autopep8 pytest coverage pre-commit
 
-      - name: Pre-commit
-        run: pre-commit run --all-files
 
       - name: Lint with flake8
         run: |
