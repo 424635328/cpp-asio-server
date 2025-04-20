@@ -26,3 +26,11 @@
 # --- General ---
 CMake:
     Version: 3.15
+    Installation: CMake.org
+    
+
+# ---- Notes ----
+# 1.  Ws2_32 is linked only for Windows builds (CMakeLists.txt handles this).
+# 2.  Boost version MUST match what's installed via Vcpkg.
+# 3.  The Vcpkg triplet is x64-windows.
+# 4.  Refer to CMakeLists.txt to see how dependencies are found and linked.
