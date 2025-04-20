@@ -1,4 +1,28 @@
+
+# C++ Project Dependencies (BASED ON CMakeLists.txt - NEEDS MANUAL ADJUSTMENT)
+# This file is NOT a typical Python requirements.txt.
+# It lists C++ dependencies and provides hints on how they are managed.
+#
+# MANUALLY REVIEW AND UPDATE THIS FILE IF YOU CHANGE YOUR DEPENDENCIES!
+
+# --- Platform: Windows (Vcpkg) ---
+#  - Building on Windows with Vcpkg.
+
+# Boost:
+    # Version: 1.81.0
+    # Installation: Vcpkg (Triplet: x64-windows)
+    # Components: system, thread, program_options (REQUIRED in CMakeLists.txt)
+
+# Asio is header-only and part of Boost. Version is tied to Boost.
+# Asio:
+
+#Other Libraries
+
+# Required for Windows sockets. Usually comes with Windows SDK.
+# Ws2_32:
+   #Part of windows SKD - does not need to install
+   #Windows only
+
 # --- General ---
 CMake:
     Version: 3.15
-    URL: https://cmake.org/files/v3.15/cmake-3.15.0-rc1-win64-x64.msi
