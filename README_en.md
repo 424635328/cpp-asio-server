@@ -6,34 +6,34 @@ A lightweight, high-performance server framework built on Boost.Asio, designed t
 
 ## Features
 
-*   **High Performance:** Leverages Boost.Asio's asynchronous, non-blocking I/O operations for efficient handling of concurrent connections.
-*   **Modular Design:** Easily extendable with custom protocols and request handlers.
-*   **Multi-threading:** Uses a thread pool to manage incoming connections and request processing, maximizing throughput.
-*   **HTTP Server Example:** Includes a basic HTTP server implementation demonstrating the framework's capabilities out-of-the-box.
-*   **Cross-Platform:** Designed for cross-platform compatibility, supporting Windows and Linux (requires appropriate build configurations).
-*   **Configurable Thread Pool:** Adjust the thread pool size based on hardware resources and anticipated workload.
-*   **Error Handling and Logging:** Provides consistent error handling and logging mechanisms throughout the framework.
+- **High Performance:** Leverages Boost.Asio's asynchronous, non-blocking I/O operations for efficient handling of concurrent connections.
+- **Modular Design:** Easily extendable with custom protocols and request handlers.
+- **Multi-threading:** Uses a thread pool to manage incoming connections and request processing, maximizing throughput.
+- **HTTP Server Example:** Includes a basic HTTP server implementation demonstrating the framework's capabilities out-of-the-box.
+- **Cross-Platform:** Designed for cross-platform compatibility, supporting Windows and Linux (requires appropriate build configurations).
+- **Configurable Thread Pool:** Adjust the thread pool size based on hardware resources and anticipated workload.
+- **Error Handling and Logging:** Provides consistent error handling and logging mechanisms throughout the framework.
 
 ## Architectural Overview
 
 The core components of the framework include:
 
-*   **Server:** Listens on a specified port, accepts new connections, and dispatches them to worker threads.
-*   **Connection:** Represents a client connection, responsible for reading data, writing data, and handling protocol-specific details.
-*   **IOContext:** The heart of Boost.Asio, managing asynchronous I/O operations.  Think of it as the engine that drives all the asynchronous tasks.
-*   **ThreadPool:** A pool of threads used to execute the connection's processing logic, improving concurrency and responsiveness.  Threads are reused for different connections, reducing overhead.
-*   **RequestHandler:** An abstract class (interface) that defines how client requests are processed. You implement concrete `RequestHandler` classes to handle specific request types or business logic.
-*   **ProtocolHandler:** Handles the specifics of a particular protocol (e.g., HTTP). Responsible for parsing incoming data according to the protocol's rules and formatting outgoing data.
+- **Server:** Listens on a specified port, accepts new connections, and dispatches them to worker threads.
+- **Connection:** Represents a client connection, responsible for reading data, writing data, and handling protocol-specific details.
+- **IOContext:** The heart of Boost.Asio, managing asynchronous I/O operations. Think of it as the engine that drives all the asynchronous tasks.
+- **ThreadPool:** A pool of threads used to execute the connection's processing logic, improving concurrency and responsiveness. Threads are reused for different connections, reducing overhead.
+- **RequestHandler:** An abstract class (interface) that defines how client requests are processed. You implement concrete `RequestHandler` classes to handle specific request types or business logic.
+- **ProtocolHandler:** Handles the specifics of a particular protocol (e.g., HTTP). Responsible for parsing incoming data according to the protocol's rules and formatting outgoing data.
 
-These components work together to provide an efficient and scalable server framework.  The `Server` accepts incoming connections, creates a `Connection` object for each, and then uses the `ThreadPool` to assign a thread to handle the connection's processing. The `Connection` object uses the `ProtocolHandler` to manage protocol-related details (like HTTP headers) and passes the processed request to the `RequestHandler` for business logic execution.
+These components work together to provide an efficient and scalable server framework. The `Server` accepts incoming connections, creates a `Connection` object for each, and then uses the `ThreadPool` to assign a thread to handle the connection's processing. The `Connection` object uses the `ProtocolHandler` to manage protocol-related details (like HTTP headers) and passes the processed request to the `RequestHandler` for business logic execution.
 
 ## Getting Started
 
 ### Prerequisites
 
-*   **Boost Library:** Required for asynchronous I/O and multi-threading. Install using your system's package manager or Vcpkg (recommended for Windows). See the [Installation](#installation) section for detailed instructions.
-*   **CMake:** Needed to build the project. Download and install CMake from [https://cmake.org/](https://cmake.org/).
-*   **MinGW (Optional, Windows):** Recommended for building on Windows using the MinGW toolchain.
+- **Boost Library:** Required for asynchronous I/O and multi-threading. Install using your system's package manager or Vcpkg (recommended for Windows). See the [Installation](#installation) section for detailed instructions.
+- **CMake:** Needed to build the project. Download and install CMake from [https://cmake.org/](https://cmake.org/).
+- **MinGW (Optional, Windows):** Recommended for building on Windows using the MinGW toolchain.
 
 ### Installation
 
@@ -47,7 +47,7 @@ Vcpkg is a package manager for C++ libraries on Windows, simplifying the install
     git clone https://github.com/microsoft/vcpkg.git
     ```
 
-2.  Bootstrap Vcpkg:  This prepares Vcpkg for use on your system.
+2.  Bootstrap Vcpkg: This prepares Vcpkg for use on your system.
 
     ```bash
     cd vcpkg
@@ -55,13 +55,13 @@ Vcpkg is a package manager for C++ libraries on Windows, simplifying the install
     ./bootstrap-vcpkg.sh    # Git Bash
     ```
 
-3.  Integrate Vcpkg with your system:  This sets up Vcpkg to be used by CMake.
+3.  Integrate Vcpkg with your system: This sets up Vcpkg to be used by CMake.
 
     ```bash
     ./vcpkg integrate install
     ```
 
-4.  Install Boost:  This downloads and builds the Boost libraries.  Choose the correct architecture (x64 for 64-bit builds, x86 for 32-bit).
+4.  Install Boost: This downloads and builds the Boost libraries. Choose the correct architecture (x64 for 64-bit builds, x86 for 32-bit).
 
     ```bash
     vcpkg install boost:x64-windows   # 64-bit build
@@ -90,13 +90,14 @@ brew install boost
     cd cpp-asio-server
     ```
 
-2.  Create a build directory:  It's good practice to build in a separate directory to keep your source code clean.
+2.  Create a build directory: It's good practice to build in a separate directory to keep your source code clean.
 
     **Important:** Before generating build files, you **must** tell CMake where to find Vcpkg. Modify the `CMakeLists.txt` file to specify the Vcpkg toolchain file path:
 
     ```cmake
     set(CMAKE_TOOLCHAIN_FILE "<path_to_vcpkg>/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg Toolchain File" FORCE)
     ```
+
     Replace `<path_to_vcpkg>` with the actual path to your Vcpkg installation.
 
     ```bash
@@ -104,45 +105,45 @@ brew install boost
     cd build
     ```
 
-3.  Generate build files using CMake:  The command you use depends on your build environment.
+3.  Generate build files using CMake: The command you use depends on your build environment.
 
-    *   **Using MinGW (Windows):**
+    - **Using MinGW (Windows):**
 
-        ```bash
-        cmake .. -G "MinGW Makefiles"
-        ```
+      ```bash
+      cmake .. -G "MinGW Makefiles"
+      ```
 
-    *   **Using Visual Studio (Windows):**
+    - **Using Visual Studio (Windows):**
 
-        ```bash
-        cmake -B . -S .. -A x64 -DCMAKE_BUILD_TYPE=Release  # Explicitly specify architecture and build type
-        ```
+      ```bash
+      cmake -B . -S .. -A x64 -DCMAKE_BUILD_TYPE=Release  # Explicitly specify architecture and build type
+      ```
 
-    *   **Using Make (Linux/macOS):**
+    - **Using Make (Linux/macOS):**
 
-        ```bash
-        cmake .. -DCMAKE_BUILD_TYPE=Release  # Explicitly specify build type
-        ```
+      ```bash
+      cmake .. -DCMAKE_BUILD_TYPE=Release  # Explicitly specify build type
+      ```
 
 4.  Build the project:
 
-    *   **Using MinGW:**
+    - **Using MinGW:**
 
-        ```bash
-        mingw32-make
-        ```
+      ```bash
+      mingw32-make
+      ```
 
-    *   **Using Visual Studio:**
+    - **Using Visual Studio:**
 
-        ```bash
-        cmake --build . --config Release
-        ```
+      ```bash
+      cmake --build . --config Release
+      ```
 
-    *   **Using Make:**
+    - **Using Make:**
 
-        ```bash
-        make
-        ```
+      ```bash
+      make
+      ```
 
 ### Running the Server
 
@@ -175,9 +176,9 @@ The framework includes a simple HTTP server example demonstrating how to handle 
 
 **Key Components:**
 
-*   `MyHttpServer`: The server class, responsible for listening for connections, accepting them, and managing the maximum number of concurrent connections.
-*   `HttpRequestHandler`: Handles the logic for processing HTTP requests and generating appropriate responses.  This is where you define your server's endpoints and behavior.
-*   `HttpSession`: Manages individual client sessions, handling reading requests, sending responses, and potentially keeping connections alive (HTTP keep-alive).
+- `MyHttpServer`: The server class, responsible for listening for connections, accepting them, and managing the maximum number of concurrent connections.
+- `HttpRequestHandler`: Handles the logic for processing HTTP requests and generating appropriate responses. This is where you define your server's endpoints and behavior.
+- `HttpSession`: Manages individual client sessions, handling reading requests, sending responses, and potentially keeping connections alive (HTTP keep-alive).
 
 **Code Example:**
 
@@ -209,11 +210,11 @@ The `HttpRequestHandler` is responsible for parsing HTTP requests and generating
 
 **Extending the HTTP Server:**
 
-You can easily extend the HTTP server by modifying the `HttpRequestHandler` to add new routes and processing logic.  Refer to the `HttpRequestHandler::handle_request` function for examples of how to add new endpoints and define their behavior.
+You can easily extend the HTTP server by modifying the `HttpRequestHandler` to add new routes and processing logic. Refer to the `HttpRequestHandler::handle_request` function for examples of how to add new endpoints and define their behavior.
 
 ## Configuration
 
-The server can be configured either via command-line options or by modifying the `main.cpp` file.  You can change the listening port, maximum connections, and other parameters.
+The server can be configured either via command-line options or by modifying the `main.cpp` file. You can change the listening port, maximum connections, and other parameters.
 
 ```bash
 ./my_server_framework --port 9000 --max_connections 2000
@@ -249,7 +250,7 @@ The framework leverages Boost.Asio's `boost::system::error_code` for consistent 
 
 The framework allows you to add support for custom protocols by implementing the `ProtocolHandler` interface.
 
-1.  **Define a Protocol Handler Class:** Create a class that inherits from `ProtocolHandler`.  This class will contain the logic for parsing and generating protocol-specific data.
+1.  **Define a Protocol Handler Class:** Create a class that inherits from `ProtocolHandler`. This class will contain the logic for parsing and generating protocol-specific data.
 
     ```c++
     class MyProtocolHandler : public ProtocolHandler {
@@ -283,49 +284,49 @@ The framework allows you to add support for custom protocols by implementing the
 
 ## More Code Examples
 
-*   **Simple Echo Server:**
+- **Simple Echo Server:**
 
-    ```c++
-    class EchoRequestHandler : public RequestHandler {
-    public:
-      HttpResponse handle_request(const HttpRequest& request) override {
-        HttpResponse response;
-        response.status_code = 200;
-        response.body = request.body; // Echo back the request body.  Whatever the client sends, the server sends back.
-        response.headers["Content-Type"] = "text/plain";
-        return response;
-      }
-    };
-    ```
+  ```c++
+  class EchoRequestHandler : public RequestHandler {
+  public:
+    HttpResponse handle_request(const HttpRequest& request) override {
+      HttpResponse response;
+      response.status_code = 200;
+      response.body = request.body; // Echo back the request body.  Whatever the client sends, the server sends back.
+      response.headers["Content-Type"] = "text/plain";
+      return response;
+    }
+  };
+  ```
 
-*   **Static File Server:**
+- **Static File Server:**
 
-    The framework's `HttpRequestHandler` already includes static file serving functionality. Place your files in the `web/` directory, and they will be accessible via HTTP. By default, accessing the root path (`/`) will serve the `web/index.html` file.
+  The framework's `HttpRequestHandler` already includes static file serving functionality. Place your files in the `web/` directory, and they will be accessible via HTTP. By default, accessing the root path (`/`) will serve the `web/index.html` file.
 
 ## Code Style Conventions
 
 To maintain consistency and readability within the codebase, please adhere to the following code style conventions:
 
-*   Use 4 spaces for indentation.
-*   Use PascalCase (also known as upper CamelCase) for class and function names (e.g., `MyClass`, `CalculateValue`).
-*   Use snake_case for variable names (e.g., `my_variable`, `user_name`).
-*   Add appropriate comments to explain the purpose and functionality of your code.  Focus on *why* the code does what it does, not just *what* it does.
-*   Write comments and documentation in English.
+- Use 4 spaces for indentation.
+- Use PascalCase (also known as upper CamelCase) for class and function names (e.g., `MyClass`, `CalculateValue`).
+- Use snake_case for variable names (e.g., `my_variable`, `user_name`).
+- Add appropriate comments to explain the purpose and functionality of your code. Focus on _why_ the code does what it does, not just _what_ it does.
+- Write comments and documentation in English.
 
 ## Contributing
 
 Contributions are welcome! Please follow these guidelines:
 
 1.  Fork the repository.
-2.  Create a new branch for your feature or bug fix.  Give the branch a descriptive name.
+2.  Create a new branch for your feature or bug fix. Give the branch a descriptive name.
     ```bash
     git checkout -b feature/my-new-feature
     ```
 3.  Implement your changes and commit them with clear, concise, and informative commit messages.
 
-    *   Commit messages should summarize the changes made in the commit.
-    *   If your changes fix a bug, include the bug number in the commit message.
-    *   If your changes add a new feature, provide a brief code example demonstrating the feature's usage.
+    - Commit messages should summarize the changes made in the commit.
+    - If your changes fix a bug, include the bug number in the commit message.
+    - If your changes add a new feature, provide a brief code example demonstrating the feature's usage.
 
     ```bash
     git commit -m "Add my new feature: Implemented X, Y, and Z"
@@ -335,9 +336,9 @@ Contributions are welcome! Please follow these guidelines:
 5.  Run all unit tests (if applicable) to verify that your changes have not introduced regressions.
 6.  Submit a pull request.
 
-    *   In the pull request description, provide a detailed explanation of the changes you've made.
-    *   If your changes fix a bug, include the bug number in the pull request description.
-    *   If your changes add a new feature, provide a brief code example demonstrating the feature's usage in the pull request description.  This makes it easier for reviewers to understand your changes.
+    - In the pull request description, provide a detailed explanation of the changes you've made.
+    - If your changes fix a bug, include the bug number in the pull request description.
+    - If your changes add a new feature, provide a brief code example demonstrating the feature's usage in the pull request description. This makes it easier for reviewers to understand your changes.
 
 7.  Code Review: Other contributors will review your code, provide feedback, and suggest improvements. Be prepared to address any feedback you receive.
 8.  Testing: Your code will be automatically tested to ensure that it does not break existing functionality.
@@ -345,51 +346,51 @@ Contributions are welcome! Please follow these guidelines:
 
 ## FAQ (Frequently Asked Questions)
 
-*   **Q: How do I handle a high volume of concurrent connections?**
+- **Q: How do I handle a high volume of concurrent connections?**
 
-    *   A: The framework uses Boost.Asio's asynchronous I/O and a thread pool to efficiently manage high concurrency.  To increase capacity, you can adjust the thread pool size and the maximum number of allowed connections. The key is to avoid blocking operations in your request handlers.
+  - A: The framework uses Boost.Asio's asynchronous I/O and a thread pool to efficiently manage high concurrency. To increase capacity, you can adjust the thread pool size and the maximum number of allowed connections. The key is to avoid blocking operations in your request handlers.
 
-*   **Q: How do I add support for a custom protocol?**
+- **Q: How do I add support for a custom protocol?**
 
-    *   A: Implement the `ProtocolHandler` interface and register it in the `Connection` class. See the [Extending Protocol Support](#extending-protocol-support) section for details.
+  - A: Implement the `ProtocolHandler` interface and register it in the `Connection` class. See the [Extending Protocol Support](#extending-protocol-support) section for details.
 
-*   **Q: How do I perform performance testing?**
+- **Q: How do I perform performance testing?**
 
-    *   A: Use tools like `ab` (Apache Benchmark) or `wrk` to benchmark the server. See the [Performance Testing and Benchmarking](#performance-testing-and-benchmarking) section.
+  - A: Use tools like `ab` (Apache Benchmark) or `wrk` to benchmark the server. See the [Performance Testing and Benchmarking](#performance-testing-and-benchmarking) section.
 
-*   **Q: How do I build the project on Windows using Visual Studio?**
+- **Q: How do I build the project on Windows using Visual Studio?**
 
-    *   A: Ensure that you have Visual Studio installed and that you specify the Visual Studio generator during CMake configuration (e.g., `cmake -B . -S .. -A x64 -DCMAKE_BUILD_TYPE=Release`). After generating the build files, you can open the generated solution file (`.sln`) in Visual Studio and build the project.
+  - A: Ensure that you have Visual Studio installed and that you specify the Visual Studio generator during CMake configuration (e.g., `cmake -B . -S .. -A x64 -DCMAKE_BUILD_TYPE=Release`). After generating the build files, you can open the generated solution file (`.sln`) in Visual Studio and build the project.
 
 ## Performance Testing and Benchmarking
 
-This section presents preliminary performance benchmark results for the server.  Please note that these results are for informational purposes only, and actual performance may vary depending on the environment.
+This section presents preliminary performance benchmark results for the server. Please note that these results are for informational purposes only, and actual performance may vary depending on the environment.
 
 **Test Environment:**
 
-*   CPU: Intel Core i7-8700K
-*   Memory: 16GB DDR4
-*   Operating System: Ubuntu 20.04
+- CPU: Intel Core i7-8700K
+- Memory: 16GB DDR4
+- Operating System: Ubuntu 20.04
 
 **Test Tool:**
 
-*   `wrk` (https://github.com/wg/wrk) - HTTP benchmarking tool
+- `wrk` (https://github.com/wg/wrk) - HTTP benchmarking tool
 
 **Test Cases:**
 
-*   **Hello World:** The server returns a simple "Hello, World!" string.
-*   **Static Page:** The server returns an `index.html` page with a loaded WASM module (date 2025.03.23 triggers this).
+- **Hello World:** The server returns a simple "Hello, World!" string.
+- **Static Page:** The server returns an `index.html` page with a loaded WASM module (date 2025.03.23 triggers this).
 
 **Test Results (Continuously Updated):**
 
 | Test Case   | Concurrent Connections | Requests per Second (RPS) | Average Latency (ms) |
-| ---------   | -------------------- | ----------------------- | -------------------- |
-| Hello World | 100                  | 10000                   | TBD                  |
-| Hello World | 1000                 | 80000                   | TBD                  |
-| Static Page | 100                  | -                       | -                    |
-| Static Page | 1000                 | -                       | -                    |
+| ----------- | ---------------------- | ------------------------- | -------------------- |
+| Hello World | 100                    | 10000                     | TBD                  |
+| Hello World | 1000                   | 80000                     | TBD                  |
+| Static Page | 100                    | -                         | -                    |
+| Static Page | 1000                   | -                         | -                    |
 
-*TBD: To Be Determined*
+_TBD: To Be Determined_
 
 **Test Command:**
 
@@ -399,9 +400,9 @@ wrk -t12 -c100 -d10s http://127.0.0.1:8765
 
 Parameter Explanations:
 
-*   `-t12`: Use 12 threads.
-*   `-c100`: Keep 100 concurrent connections.
-*   `-d10s`: Test duration is 10 seconds.
+- `-t12`: Use 12 threads.
+- `-c100`: Keep 100 concurrent connections.
+- `-d10s`: Test duration is 10 seconds.
 
 **Disclaimer:**
 
