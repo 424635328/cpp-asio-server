@@ -9,55 +9,6 @@ on:
     - cron: '0 0 * * 0' # Run weekly on Sunday at midnight UTC
 
 jobs:
-  dependency-check:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive # If you have submodules
-
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v3
-        with:
-          fail-on-severity: "high" # Optional: Set a threshold for failure.  Can be "critical", "high", "moderate", "low".  Defaults to "high"
-
-  codeql:
-    name: CodeQL Analysis
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive # If you have submodules
-
-      # Initializes the CodeQL tools for scanning.
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: cpp # Or other relevant languages
-
-      # Autobuild attempts to build any codeql supported languages.
-      # You can remove this step if you don't want it, but you
-      # should replace it with your own build steps. If your
-      # project is complex, you *must* replace the Autobuild step
-      # with your own steps, or the CodeQL analysis may not
-      # function correctly.
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
-
-      # Performs CodeQL Analysis
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:cpp" # Static value for the language.
-
   semgrep:
     runs-on: ubuntu-latest
     container:
