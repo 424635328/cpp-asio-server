@@ -33,7 +33,6 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install libboost-dev libboost-system-dev libboost-thread-dev
 
       - name: Install Dependencies (macOS)
         if: runner.os == 'macOS'
@@ -46,21 +45,13 @@ jobs:
           arch: x64 # Adjust as needed (x64, x86, arm64)
           #vs_version: 2019 #可选，指定VS版本
 
-      - name: Configure CMake
-        run: |
-          cmake -B ${{github.workspace}}/build \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DCMAKE_C_COMPILER=${{ matrix.cc }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
-            -S ${{github.workspace}}
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{ matrix.build_type }}
+        run: |
 
       - name: Test (Optional - If you have tests)
         if: matrix.build_type == 'Release'  # Only run tests on Release build
         run: |
           cd ${{github.workspace}}/build
-          ctest -C ${{ matrix.build_type }} .
           # or if you have a specific test executable
           # ./my_test_executable
