@@ -6,25 +6,25 @@
 
 ## 特性
 
-*   **高性能:** 利用 Boost.Asio 的异步非阻塞 I/O 操作，高效处理并发连接。 异步 I/O 允许服务器在等待 I/O 操作完成时处理其他任务，从而提高了吞吐量和响应速度。
-*   **模块化设计:** 可轻松使用自定义协议和请求处理程序进行扩展。 通过实现 `ProtocolHandler` 和 `RequestHandler` 接口，您可以轻松添加对新协议和请求类型的支持。
-*   **多线程:** 使用线程池管理传入连接和请求处理，最大限度地提高吞吐量。 线程池减少了创建和销毁线程的开销，从而提高了性能。
-*   **HTTP 服务器示例:** 包含一个基本的 HTTP 服务器实现，开箱即用地演示框架的功能。 HTTP 服务器示例演示了如何处理 HTTP 请求、提供静态文件和处理表单提交。
-*   **跨平台:** 设计为跨平台兼容，支持 Windows 和 Linux (需要适当的构建配置)。 该框架可以使用 CMake 构建，CMake 是一个跨平台构建系统。
-*   **可配置的线程池:** 可以根据硬件资源和预期工作负载调整线程池大小。 线程池的大小应该根据 CPU 核心数和预期的并发连接数进行调整。
-*   **错误处理和日志记录:** 在整个框架中提供一致的错误处理和日志记录机制。 框架使用 Boost.Asio 的 `boost::system::error_code` 进行错误处理，并使用 `std::cout` 和 `std::cerr` 进行日志记录。
-*   **拓展：** 提供 wasm 模块进行拓展功能 (例如: [gray_scale.cpp](gray_scale.cpp))，提升性能。 WASM 模块允许您使用其他编程语言（如 C++）编写高性能代码，并在 Web 浏览器中运行它。
+- **高性能:** 利用 Boost.Asio 的异步非阻塞 I/O 操作，高效处理并发连接。 异步 I/O 允许服务器在等待 I/O 操作完成时处理其他任务，从而提高了吞吐量和响应速度。
+- **模块化设计:** 可轻松使用自定义协议和请求处理程序进行扩展。 通过实现 `ProtocolHandler` 和 `RequestHandler` 接口，您可以轻松添加对新协议和请求类型的支持。
+- **多线程:** 使用线程池管理传入连接和请求处理，最大限度地提高吞吐量。 线程池减少了创建和销毁线程的开销，从而提高了性能。
+- **HTTP 服务器示例:** 包含一个基本的 HTTP 服务器实现，开箱即用地演示框架的功能。 HTTP 服务器示例演示了如何处理 HTTP 请求、提供静态文件和处理表单提交。
+- **跨平台:** 设计为跨平台兼容，支持 Windows 和 Linux (需要适当的构建配置)。 该框架可以使用 CMake 构建，CMake 是一个跨平台构建系统。
+- **可配置的线程池:** 可以根据硬件资源和预期工作负载调整线程池大小。 线程池的大小应该根据 CPU 核心数和预期的并发连接数进行调整。
+- **错误处理和日志记录:** 在整个框架中提供一致的错误处理和日志记录机制。 框架使用 Boost.Asio 的 `boost::system::error_code` 进行错误处理，并使用 `std::cout` 和 `std::cerr` 进行日志记录。
+- **拓展：** 提供 wasm 模块进行拓展功能 (例如: [gray_scale.cpp](gray_scale.cpp))，提升性能。 WASM 模块允许您使用其他编程语言（如 C++）编写高性能代码，并在 Web 浏览器中运行它。
 
 ## 架构概览
 
 框架的核心组件包括：
 
-*   **Server (服务器):** 监听指定的端口，接受新的连接，并将它们分派给工作线程。 服务器使用 `boost::asio::acceptor` 监听连接请求。
-*   **HttpSession (连接/会话):** 在您提供的代码中，框架使用 `HttpSession` 类来处理客户端连接，它负责读取数据、写入数据，以及处理 HTTP 协议特定的细节。 传统上，这些职责通常由一个单独的 `Connection` 类承担。 `HttpSession` 类管理连接的生命周期，并处理部分读取和写入。
-*   **IOContext:** Boost.Asio 的核心组件，管理异步 I/O 操作。 可以将其视为驱动所有异步任务的引擎。 `io_context` 管理事件循环和完成处理程序。
-*   **ThreadPool (线程池):** 用于执行连接处理逻辑的线程池，提高并发性和响应能力。 线程被重用于不同的连接，从而减少了创建和销毁线程的开销。 `ThreadPool` 减少了创建和销毁线程的开销，从而提高了性能。
-*   **RequestHandler (请求处理程序):** 一个抽象类（接口），定义了如何处理客户端请求。 您需要实现具体的 `RequestHandler` 类来处理特定的请求类型或业务逻辑。 `RequestHandler` 接口定义了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。
-*   **ProtocolHandler (协议处理程序):** 处理特定协议的细节（例如，HTTP）。 负责根据协议规则解析传入数据和格式化传出数据。 `ProtocolHandler` 接口定义了 `parseRequest()` 和 `createResponse()` 方法，分别用于解析请求和格式化响应。
+- **Server (服务器):** 监听指定的端口，接受新的连接，并将它们分派给工作线程。 服务器使用 `boost::asio::acceptor` 监听连接请求。
+- **HttpSession (连接/会话):** 在您提供的代码中，框架使用 `HttpSession` 类来处理客户端连接，它负责读取数据、写入数据，以及处理 HTTP 协议特定的细节。 传统上，这些职责通常由一个单独的 `Connection` 类承担。 `HttpSession` 类管理连接的生命周期，并处理部分读取和写入。
+- **IOContext:** Boost.Asio 的核心组件，管理异步 I/O 操作。 可以将其视为驱动所有异步任务的引擎。 `io_context` 管理事件循环和完成处理程序。
+- **ThreadPool (线程池):** 用于执行连接处理逻辑的线程池，提高并发性和响应能力。 线程被重用于不同的连接，从而减少了创建和销毁线程的开销。 `ThreadPool` 减少了创建和销毁线程的开销，从而提高了性能。
+- **RequestHandler (请求处理程序):** 一个抽象类（接口），定义了如何处理客户端请求。 您需要实现具体的 `RequestHandler` 类来处理特定的请求类型或业务逻辑。 `RequestHandler` 接口定义了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。
+- **ProtocolHandler (协议处理程序):** 处理特定协议的细节（例如，HTTP）。 负责根据协议规则解析传入数据和格式化传出数据。 `ProtocolHandler` 接口定义了 `parseRequest()` 和 `createResponse()` 方法，分别用于解析请求和格式化响应。
 
 这些组件协同工作，提供了一个高效且可扩展的服务器框架。 `Server` 接受传入的连接，为每个连接创建一个 `HttpSession` 对象，然后使用 `ThreadPool` 分配一个线程来处理连接的处理。 `HttpSession` 对象使用 `ProtocolHandler` 来管理协议相关的细节（如 HTTP 头部），并将处理后的请求传递给 `RequestHandler` 以执行业务逻辑。
 
@@ -32,9 +32,9 @@
 
 ### 前提条件
 
-*   **Boost 库:** 异步 I/O 和多线程所需。 使用系统的包管理器或 Vcpkg 安装 Boost (推荐用于 Windows)。 有关详细说明，请参阅 [安装](#安装) 部分。
-*   **CMake:** 构建项目所需。 从 [https://cmake.org/](https://cmake.org/) 下载并安装 CMake。
-*   **MinGW (可选, Windows):** 推荐在 Windows 上使用 MinGW 工具链进行构建。
+- **Boost 库:** 异步 I/O 和多线程所需。 使用系统的包管理器或 Vcpkg 安装 Boost (推荐用于 Windows)。 有关详细说明，请参阅 [安装](#安装) 部分。
+- **CMake:** 构建项目所需。 从 [https://cmake.org/](https://cmake.org/) 下载并安装 CMake。
+- **MinGW (可选, Windows):** 推荐在 Windows 上使用 MinGW 工具链进行构建。
 
 ### 安装
 
@@ -98,47 +98,48 @@ brew install boost
     ```cmake
     set(CMAKE_TOOLCHAIN_FILE "<vcpkg安装路径>/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg Toolchain File" FORCE)
     ```
+
     将 `<vcpkg安装路径>` 替换为 Vcpkg 安装的实际路径。
 
 3.  使用 CMake 生成构建文件： 使用的命令取决于您的构建环境。
 
-    *   **使用 MinGW (Windows):**
+    - **使用 MinGW (Windows):**
 
-        ```bash
-        cmake .. -G "MinGW Makefiles"
-        ```
+      ```bash
+      cmake .. -G "MinGW Makefiles"
+      ```
 
-    *   **使用 Visual Studio (Windows):**
+    - **使用 Visual Studio (Windows):**
 
-        ```bash
-        cmake -B build -S . -A x64 -DCMAKE_BUILD_TYPE=Release  # 明确指定架构和构建类型(在项目根目录下运行)
-        ```
+      ```bash
+      cmake -B build -S . -A x64 -DCMAKE_BUILD_TYPE=Release  # 明确指定架构和构建类型(在项目根目录下运行)
+      ```
 
-    *   **使用 Make (Linux/macOS):**
+    - **使用 Make (Linux/macOS):**
 
-        ```bash
-        cmake .. -DCMAKE_BUILD_TYPE=Release  # 明确指定构建类型
-        ```
+      ```bash
+      cmake .. -DCMAKE_BUILD_TYPE=Release  # 明确指定构建类型
+      ```
 
 4.  构建项目：
 
-    *   **使用 MinGW:**
+    - **使用 MinGW:**
 
-        ```bash
-        mingw32-make
-        ```
+      ```bash
+      mingw32-make
+      ```
 
-    *   **使用 Visual Studio:**
+    - **使用 Visual Studio:**
 
-        ```bash
-        cmake --build build --config Release   # 在项目根目录下运行
-        ```
+      ```bash
+      cmake --build build --config Release   # 在项目根目录下运行
+      ```
 
-    *   **使用 Make:**
+    - **使用 Make:**
 
-        ```bash
-        make
-        ```
+      ```bash
+      make
+      ```
 
 ### 运行服务器
 
@@ -174,9 +175,9 @@ brew install boost
 
 **关键组件：**
 
-*   `MyHttpServer`: 服务器类，负责监听连接、接受连接以及管理最大并发连接数。 `MyHttpServer` 继承自 `Server` 类，并重写了 `create_session()` 方法，用于创建 `HttpSession` 对象。
-*   `HttpRequestHandler`: 处理逻辑以处理 HTTP 请求并生成适当响应。 这是定义服务器端点和行为的地方。 `HttpRequestHandler` 类实现了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。 `handle_request()` 方法可以处理静态文件请求、表单提交和 API 请求。
-*   `HttpSession`: 管理单个客户端会话，处理读取请求、发送响应以及潜在地保持连接活动（HTTP 持久连接）。 `HttpSession` 类负责读取 HTTP 请求、调用 `HttpRequestHandler` 处理请求、发送 HTTP 响应，以及关闭连接。
+- `MyHttpServer`: 服务器类，负责监听连接、接受连接以及管理最大并发连接数。 `MyHttpServer` 继承自 `Server` 类，并重写了 `create_session()` 方法，用于创建 `HttpSession` 对象。
+- `HttpRequestHandler`: 处理逻辑以处理 HTTP 请求并生成适当响应。 这是定义服务器端点和行为的地方。 `HttpRequestHandler` 类实现了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。 `handle_request()` 方法可以处理静态文件请求、表单提交和 API 请求。
+- `HttpSession`: 管理单个客户端会话，处理读取请求、发送响应以及潜在地保持连接活动（HTTP 持久连接）。 `HttpSession` 类负责读取 HTTP 请求、调用 `HttpRequestHandler` 处理请求、发送 HTTP 响应，以及关闭连接。
 
 **代码示例：**
 
@@ -233,10 +234,10 @@ HttpResponse HttpRequestHandler::handle_request(const HttpRequest& request) {
 
 **关键代码解释：**
 
-*   **线程池的创建和管理：** `AsioContext` 类负责创建和管理线程池。 线程池的大小应该根据 CPU 核心数和预期的并发连接数进行调整。 过多的线程会导致上下文切换开销，而过少的线程会导致吞吐量降低。 一般来说，线程池的大小设置为 CPU 核心数的 2 倍是一个不错的选择。
-*   **异步 I/O 的使用：** `HttpSession` 类使用 Boost.Asio 的异步 I/O 操作来读取和写入数据。 异步 I/O 允许服务器在等待 I/O 操作完成时处理其他任务，从而提高了吞吐量和响应速度。
-*   **请求处理器的实现：** `HttpRequestHandler` 类实现了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。 `handle_request()` 方法可以处理静态文件请求、表单提交和 API 请求。
-*   **HTTP 状态码的使用：** `HttpRequestHandler` 类使用 HTTP 状态码来指示请求的结果。 例如，`200 OK` 表示请求成功，`404 Not Found` 表示请求的资源不存在。
+- **线程池的创建和管理：** `AsioContext` 类负责创建和管理线程池。 线程池的大小应该根据 CPU 核心数和预期的并发连接数进行调整。 过多的线程会导致上下文切换开销，而过少的线程会导致吞吐量降低。 一般来说，线程池的大小设置为 CPU 核心数的 2 倍是一个不错的选择。
+- **异步 I/O 的使用：** `HttpSession` 类使用 Boost.Asio 的异步 I/O 操作来读取和写入数据。 异步 I/O 允许服务器在等待 I/O 操作完成时处理其他任务，从而提高了吞吐量和响应速度。
+- **请求处理器的实现：** `HttpRequestHandler` 类实现了 `handle_request()` 方法，该方法用于处理客户端请求并返回 HTTP 响应。 `handle_request()` 方法可以处理静态文件请求、表单提交和 API 请求。
+- **HTTP 状态码的使用：** `HttpRequestHandler` 类使用 HTTP 状态码来指示请求的结果。 例如，`200 OK` 表示请求成功，`404 Not Found` 表示请求的资源不存在。
 
 ## 配置
 
@@ -286,9 +287,9 @@ int main(int argc, char* argv[]) {
 
 **Boost.Program_options 使用说明：**
 
-*   **定义选项：** 使用 `po::options_description` 类定义命令行选项。 每个选项都有一个名称、一个描述和一个类型。
-*   **解析命令行：** 使用 `po::store()` 函数解析命令行参数，并将结果存储在 `po::variables_map` 对象中。
-*   **访问选项：** 使用 `vm["option_name"].as<type>()` 方法访问选项的值。
+- **定义选项：** 使用 `po::options_description` 类定义命令行选项。 每个选项都有一个名称、一个描述和一个类型。
+- **解析命令行：** 使用 `po::store()` 函数解析命令行参数，并将结果存储在 `po::variables_map` 对象中。
+- **访问选项：** 使用 `vm["option_name"].as<type>()` 方法访问选项的值。
 
 **线程池配置：**
 
@@ -301,12 +302,12 @@ AsioContext io_context(num_threads);
 
 **线程池大小的权衡：**
 
-*   **过多的线程：** 会导致上下文切换开销增加，从而降低性能。
-*   **过少的线程：** 会导致吞吐量降低，因为服务器无法充分利用 CPU 资源。
+- **过多的线程：** 会导致上下文切换开销增加，从而降低性能。
+- **过少的线程：** 会导致吞吐量降低，因为服务器无法充分利用 CPU 资源。
 
 **建议的线程池大小计算方法：**
 
-*   `线程数 = CPU 核心数 * 2`
+- `线程数 = CPU 核心数 * 2`
 
 **错误处理和日志记录：**
 
@@ -351,9 +352,9 @@ boost::asio::async_read(socket_, buffer_, boost::asio::transfer_at_least(1),
 
 2.  **修改 `HttpSession` 类以支持新的协议：**
 
-    *   **协议识别：** 在 `HttpSession::start()` 方法中，添加逻辑以识别当前连接使用的协议。 这可能涉及读取连接的初始几个字节，并根据这些字节判断协议类型。
-    *   **协议处理程序选择：** 根据识别出的协议，创建相应的 `ProtocolHandler` 对象。
-    *   **请求处理：** 修改 `HttpSession::do_read()` 和 `HttpSession::do_write()` 方法，使用选定的 `ProtocolHandler` 来解析请求和格式化响应。
+    - **协议识别：** 在 `HttpSession::start()` 方法中，添加逻辑以识别当前连接使用的协议。 这可能涉及读取连接的初始几个字节，并根据这些字节判断协议类型。
+    - **协议处理程序选择：** 根据识别出的协议，创建相应的 `ProtocolHandler` 对象。
+    - **请求处理：** 修改 `HttpSession::do_read()` 和 `HttpSession::do_write()` 方法，使用选定的 `ProtocolHandler` 来解析请求和格式化响应。
 
     **示例：修改 `HttpSession::start()`**
 
@@ -394,48 +395,48 @@ boost::asio::async_read(socket_, buffer_, boost::asio::transfer_at_least(1),
 
 ## 更多代码示例
 
-*   **简单的回显服务器：**
+- **简单的回显服务器：**
 
-    ```c++
-    class EchoRequestHandler : public RequestHandler {
-    public:
-        HttpResponse handle_request(const HttpRequest& request) override {
-            HttpResponse response;
-            response.status_code = 200;
-            response.body = request.body; // 将请求正文回显到客户端。 无论客户端发送什么，服务器都会发回什么。
-            response.headers["Content-Type"] = "text/plain";
-            return response;
-        }
-    };
-    ```
+  ```c++
+  class EchoRequestHandler : public RequestHandler {
+  public:
+      HttpResponse handle_request(const HttpRequest& request) override {
+          HttpResponse response;
+          response.status_code = 200;
+          response.body = request.body; // 将请求正文回显到客户端。 无论客户端发送什么，服务器都会发回什么。
+          response.headers["Content-Type"] = "text/plain";
+          return response;
+      }
+  };
+  ```
 
-*   **静态文件服务器：**
+- **静态文件服务器：**
 
-    该框架的 `HttpRequestHandler` 已经包含静态文件服务功能。 将您的文件放在 `web/` 目录中，它们将可以通过 HTTP 访问。 默认情况下，访问根路径 (`/`) 将提供 `web/index.html` 文件。
+  该框架的 `HttpRequestHandler` 已经包含静态文件服务功能。 将您的文件放在 `web/` 目录中，它们将可以通过 HTTP 访问。 默认情况下，访问根路径 (`/`) 将提供 `web/index.html` 文件。
 
-    **目录结构：**
+  **目录结构：**
 
-    ```
-    cpp-asio-server/
-    ├── web/
-    │   ├── index.html
-    │   ├── style.css
-    │   └── script.js
-    ├── src/
-    │   ├── ...
-    ├── ...
-    ```
+  ```
+  cpp-asio-server/
+  ├── web/
+  │   ├── index.html
+  │   ├── style.css
+  │   └── script.js
+  ├── src/
+  │   ├── ...
+  ├── ...
+  ```
 
 ## 代码风格约定
 
 为了保持代码库中的一致性和可读性，请遵循以下代码风格约定：
 
-*   使用 4 个空格进行缩进。
-*   对于类和函数名称，使用 PascalCase（也称为大驼峰式命名）(例如，`MyClass`，`CalculateValue`)。
-*   对于变量名，使用 snake_case (例如，`my_variable`，`user_name`)。
-*   添加适当的注释来解释代码的目的和功能。 专注于代码 *为什么* 要执行它所执行的操作，而不仅仅是代码 *做什么*。
-*   用英语编写注释和文档。
-*   使用代码格式化工具（例如，clang-format）来自动格式化代码，以确保代码库中的一致性。
+- 使用 4 个空格进行缩进。
+- 对于类和函数名称，使用 PascalCase（也称为大驼峰式命名）(例如，`MyClass`，`CalculateValue`)。
+- 对于变量名，使用 snake_case (例如，`my_variable`，`user_name`)。
+- 添加适当的注释来解释代码的目的和功能。 专注于代码 _为什么_ 要执行它所执行的操作，而不仅仅是代码 _做什么_。
+- 用英语编写注释和文档。
+- 使用代码格式化工具（例如，clang-format）来自动格式化代码，以确保代码库中的一致性。
 
 ## 贡献
 
@@ -448,10 +449,10 @@ boost::asio::async_read(socket_, buffer_, boost::asio::transfer_at_least(1),
     ```
 3.  实现您的更改并提交它们，并使用清晰、简洁和信息丰富的提交消息。
 
-    *   提交消息应概括提交中所做的更改。
-    *   如果您的更改修复了一个错误，请在提交消息中包含错误编号。
-    *   如果您的更改添加了一个新功能，请提供一个简短的代码示例，演示该功能的用法。
-    *   遵循 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 规范，以使提交历史更加清晰和一致。
+    - 提交消息应概括提交中所做的更改。
+    - 如果您的更改修复了一个错误，请在提交消息中包含错误编号。
+    - 如果您的更改添加了一个新功能，请提供一个简短的代码示例，演示该功能的用法。
+    - 遵循 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 规范，以使提交历史更加清晰和一致。
 
     ```bash
     git commit -m "feat: 添加我的新功能：实现了 X、Y 和 Z"
@@ -461,9 +462,9 @@ boost::asio::async_read(socket_, buffer_, boost::asio::transfer_at_least(1),
 5.  运行所有单元测试（如果适用），以验证您的更改是否没有引入回归。
 6.  提交拉取请求。
 
-    *   在拉取请求说明中，提供您所做更改的详细说明。
-    *   如果您的更改修复了一个错误，请在拉取请求说明中包含错误编号。
-    *   如果您的更改添加了一个新功能，请提供一个简短的代码示例，演示在拉取请求说明中该功能的用法。
+    - 在拉取请求说明中，提供您所做更改的详细说明。
+    - 如果您的更改修复了一个错误，请在拉取请求说明中包含错误编号。
+    - 如果您的更改添加了一个新功能，请提供一个简短的代码示例，演示在拉取请求说明中该功能的用法。
 
 7.  代码审查：其他贡献者将审查您的代码，提供反馈并提出改进建议。 准备好处理收到的任何反馈。
 8.  测试：您的代码将被自动测试，以确保它不会破坏现有功能。
@@ -479,29 +480,29 @@ boost::asio::async_read(socket_, buffer_, boost::asio::transfer_at_least(1),
 
 **测试环境:**
 
-*   CPU: Intel Core r7-5800H
-*   内存: 16GB DDR4
-*   操作系统: Ubuntu 20.04
+- CPU: Intel Core r7-5800H
+- 内存: 16GB DDR4
+- 操作系统: Ubuntu 20.04
 
 **测试工具:**
 
-*   `wrk` (https://github.com/wg/wrk) - HTTP基准测试工具
+- `wrk` (https://github.com/wg/wrk) - HTTP 基准测试工具
 
 **测试用例:**
 
-*   **Hello World:** 服务器返回一个简单的 "Hello, World!" 字符串。
-*   **静态网页:** 服务器返回已加载 WASM 模块的 `index.html` 页面 (更改日期:2025.03.23)。
+- **Hello World:** 服务器返回一个简单的 "Hello, World!" 字符串。
+- **静态网页:** 服务器返回已加载 WASM 模块的 `index.html` 页面 (更改日期:2025.03.23)。
 
 **测试结果 (持续更新):**
 
-| 测试用例      | 并发连接数 | 每秒请求数 (RPS) | 平均延迟 (毫秒) |
-| ----------- | -------- | ------------- | ----------- |
-| Hello World | 100      | 10000         | TBD         |
-| Hello World | 1000     | 80000         | TBD         |
-| 静态网页    | 100      | -             | -           |
-| 静态网页    | 1000     | -             | -           |
+| 测试用例    | 并发连接数 | 每秒请求数 (RPS) | 平均延迟 (毫秒) |
+| ----------- | ---------- | ---------------- | --------------- |
+| Hello World | 100        | 10000            | TBD             |
+| Hello World | 1000       | 80000            | TBD             |
+| 静态网页    | 100        | -                | -               |
+| 静态网页    | 1000       | -                | -               |
 
-*TBD: 待确定 (To Be Determined)*
+_TBD: 待确定 (To Be Determined)_
 
 **测试命令:**
 
@@ -511,9 +512,9 @@ wrk -t12 -c100 -d10s http://127.0.0.1:8765
 
 参数说明:
 
-*   `-t12`: 使用 12 个线程。
-*   `-c100`: 保持 100 个并发连接。
-*   `-d10s`: 测试持续 10 秒。
+- `-t12`: 使用 12 个线程。
+- `-c100`: 保持 100 个并发连接。
+- `-d10s`: 测试持续 10 秒。
 
 **免责声明:**
 

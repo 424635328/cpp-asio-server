@@ -1,42 +1,4 @@
-# C++ Project Dependencies (APPROXIMATE - NEEDS MANUAL ADJUSTMENT)
-# This file is NOT a typical Python requirements.txt.
-# It lists C++ dependencies and provides hints on how they are managed.
-#
-# MANUALLY REVIEW AND UPDATE THIS FILE!
-
-# Core Libraries (likely installed via system package manager or Vcpkg)
-
-Boost:
-    # Version:  (FIND AND ADD THE VERSION NUMBER)
-    # Installation:  Check README for specific instructions. Likely apt, brew, or Vcpkg.
-    # Components used (if any): system, thread  (Adjust based on your CMakeLists.txt)
-
-Asio:
-    # Version: (FIND AND ADD THE VERSION NUMBER, IF KNOWN.  asio is often header-only)
-    # Installation: If not found via find_package(), it may be header-only and require only include path configuration.
-    #               If using Vcpkg, specify the package name.
-
-# WASM (WebAssembly) Support (if applicable)
-#   - Emscripten (or other WASM toolchain):  Requires separate installation and configuration.
-
-# Build Tools
+# --- General ---
 CMake:
-    # Version: (CHECK YOUR INSTALLED VERSION)
-    # Installation:  Download from cmake.org or use your system package manager.
-
-# Windows-Specific (if applicable)
-MinGW:
-    # Installation:  If building on Windows, MinGW may be required.
-
-# Notes:
-# 1.  This list is based on the README.md you provided and may be incomplete.
-# 2.  Specify the correct version numbers for each dependency.
-# 3.  Indicate how each dependency is installed (e.g., apt, brew, Vcpkg, manual download).
-# 4.  For Boost, list the specific components you are using.
-# 5.  If a library is header-only, note that only include path configuration is required.
-# 6.  If you are using Vcpkg, consider using vcpkg export to generate a more complete
-#     list of dependencies.  However, even that may not be perfect.
-
-# Example for Vcpkg manifest mode:
-#vcpkg export --overlay-ports=. --overlay-triplets=triplets --triplet x64-windows --output my_dependencies
-# This can create a list, but review and adapt as needed
+    Version: 3.15
+    URL: https://cmake.org/files/v3.15/cmake-3.15.0-rc1-win64-x64.msi
