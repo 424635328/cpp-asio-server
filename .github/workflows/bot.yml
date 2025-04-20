@@ -42,7 +42,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const github = require('@actions/github');
             const context = github.context;
 
             /**
