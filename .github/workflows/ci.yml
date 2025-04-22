@@ -25,7 +25,7 @@ jobs:
             cxx: null # Uses Visual Studio's default
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive # 如果你有子模块
 
@@ -52,6 +52,6 @@ jobs:
       - name: Test (Optional - If you have tests)
         if: matrix.build_type == 'Release'  # Only run tests on Release build
         run: |
-          cd ${{github.workspace}}/build
+          # cd ${{github.workspace}}/build
           # or if you have a specific test executable
           # ./my_test_executable
